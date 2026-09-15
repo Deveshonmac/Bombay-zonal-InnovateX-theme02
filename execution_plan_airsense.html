@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AirSense — Execution Plan</title>
+<style>
+  @font-face { font-family: 'Fraunces Display'; src: url('fonts/Fraunces-Display-Regular.ttf'); font-weight: 400; }
+  @font-face { font-family: 'Fraunces Display'; src: url('fonts/Fraunces-Display-Bold.ttf'); font-weight: 700; }
+  @font-face { font-family: 'Fraunces Text'; src: url('fonts/Fraunces-Text-Medium.ttf'); font-weight: 500; }
+  @font-face { font-family: 'Space Grotesk 2'; src: url('fonts/SpaceGrotesk-Regular2.ttf'); font-weight: 400; }
+  @font-face { font-family: 'Space Grotesk 2'; src: url('fonts/SpaceGrotesk-Bold2.ttf'); font-weight: 700; }
+  @font-face { font-family: 'Space Grotesk Medium 2'; src: url('fonts/SpaceGrotesk-Medium2.ttf'); font-weight: 400; }
+
+  :root{
+    --paper:#EEEFE6;
+    --ink:#12241C;
+    --ink-soft:#3E4C42;
+    --teal:#0E6B57;
+    --teal-deep:#0A4D3F;
+    --amber:#C4881F;
+    --slate:#33566E;
+    --brick:#A13B33;
+    --line:#C7C2AE;
+    --card:#F7F7F0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ font-family:'Space Grotesk 2', sans-serif; color:var(--ink); background:var(--paper); font-size:9.6pt; line-height:1.45; }
+
+  .sheet{ padding: 4mm 2mm; }
+
+  .kicker{ font-weight:700; font-size:8.6pt; letter-spacing:0.13em; color:var(--teal-deep); margin-bottom:2.5mm; }
+  h1{ font-family:'Fraunces Display', serif; font-weight:700; font-size:32pt; line-height:1.03; color:var(--ink); }
+  .h-sub{ font-family:'Fraunces Text', serif; font-style:italic; font-weight:500; font-size:12.5pt; color:var(--teal-deep); margin-top:2.4mm; }
+
+  .titleblock{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-bottom:1.3mm solid var(--ink); padding-bottom:4mm; margin-bottom:6mm;
+  }
+  .meta{ text-align:right; font-size:8.4pt; line-height:1.7; color:var(--ink-soft); }
+  .meta b{ color:var(--ink); }
+
+  .snapshot{
+    display:flex; background:linear-gradient(120deg, var(--teal-deep), var(--teal) 75%);
+    color:#F4F5EC; border-radius:2.6mm; padding:5.5mm 7mm; margin-bottom:7mm; gap:0;
+  }
+  .snapshot .cell{ flex:1; padding:0 5mm; border-left:0.3mm solid rgba(244,245,236,0.28); }
+  .snapshot .cell:first-child{ border-left:none; padding-left:0; }
+  .snapshot .lbl{ font-size:7.3pt; letter-spacing:0.09em; font-weight:700; opacity:0.85; margin-bottom:1.6mm; }
+  .snapshot .val{ font-family:'Fraunces Display', serif; font-weight:700; font-size:13pt; line-height:1.15; }
+
+  h2{
+    font-family:'Fraunces Display', serif; font-weight:700; font-size:16.5pt;
+    color:var(--teal-deep); margin:8mm 0 3.2mm 0;
+    display:flex; align-items:baseline; gap:3mm;
+  }
+  h2 .n{ font-size:11pt; color:var(--amber); }
+  h2:first-of-type{ margin-top:0; }
+  p.lead{ font-size:9.6pt; color:var(--ink-soft); margin-bottom:3mm; max-width:175mm; }
+
+  .scope-grid{ display:flex; gap:5mm; margin-bottom:2mm; }
+  .scope-col{ flex:1; background:var(--card); border:0.3mm solid var(--line); border-radius:2.2mm; padding:4.5mm 5.5mm; }
+  .scope-col.in{ border-left:1.4mm solid var(--teal); }
+  .scope-col.out{ border-left:1.4mm solid var(--brick); }
+  .scope-col .stitle{ font-weight:700; font-size:10pt; margin-bottom:2mm; }
+  .scope-col.in .stitle{ color:var(--teal-deep); }
+  .scope-col.out .stitle{ color:var(--brick); }
+  .scope-col ul{ padding-left:4mm; font-size:8.7pt; color:var(--ink-soft); }
+  .scope-col li{ margin-bottom:1.4mm; }
+
+  /* Timeline */
+  .month{
+    border:0.3mm solid var(--line); border-radius:2.2mm; margin-bottom:4mm;
+    overflow:hidden;
+    page-break-inside: avoid;
+  }
+  .month-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:3.4mm 5.5mm; color:#fff;
+  }
+  .month-head .m-title{ font-family:'Fraunces Display',serif; font-weight:700; font-size:12.5pt; }
+  .month-head .m-sub{ font-size:8pt; opacity:0.9; }
+  .m1 .month-head{ background:var(--teal-deep); }
+  .m2 .month-head{ background:var(--slate); }
+  .m3 .month-head{ background:var(--brick); }
+
+  .weekrow{
+    display:flex; gap:4mm; padding:3mm 5.5mm; border-top:0.25mm solid var(--line);
+    background:var(--card);
+  }
+  .weekrow:nth-child(even){ background:#EFEFE4; }
+  .weekrow .wk{
+    flex:0 0 20mm; font-family:'Fraunces Display',serif; font-weight:700; font-size:10.5pt; color:var(--ink);
+    padding-top:0.3mm;
+  }
+  .weekrow .wk small{ display:block; font-family:'Space Grotesk Medium 2',sans-serif; font-weight:400; font-size:7pt; color:var(--ink-soft); }
+  .weekrow .wbody{ flex:1; }
+  .weekrow .wtitle{ font-weight:700; font-size:9.4pt; margin-bottom:0.8mm; }
+  .weekrow .wdesc{ font-size:8.6pt; color:var(--ink-soft); line-height:1.4; }
+  .weekrow .wtools{ flex:0 0 42mm; font-size:7.8pt; color:var(--ink-soft); text-align:right; padding-top:0.4mm; }
+  .weekrow .wtools b{ color:var(--ink); }
+
+  table{ width:100%; border-collapse:collapse; margin-bottom:2mm; font-size:8.7pt; }
+  th{ background:var(--teal-deep); color:#fff; text-align:left; padding:2.6mm 3.6mm; font-size:8.2pt; letter-spacing:0.02em; }
+  td{ padding:2.6mm 3.6mm; border-bottom:0.25mm solid var(--line); vertical-align:top; color:var(--ink-soft); }
+  tr:nth-child(even) td{ background:var(--card); }
+  td.b{ color:var(--ink); font-weight:700; }
+  td.num{ text-align:right; font-family:'Fraunces Display',serif; font-weight:700; color:var(--teal-deep); }
+
+  .risk-grid{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin-bottom:2mm; }
+  .risk{
+    background:var(--card); border:0.3mm solid var(--line); border-radius:2.2mm; padding:4mm 5mm;
+    border-left:1.3mm solid var(--amber);
+    page-break-inside: avoid;
+  }
+  .risk .rtitle{ font-weight:700; font-size:9.4pt; margin-bottom:1.4mm; }
+  .risk .rtitle .lvl{
+    font-size:6.6pt; font-weight:700; letter-spacing:0.05em; padding:0.6mm 2mm; border-radius:6mm;
+    margin-left:2mm; vertical-align:middle;
+  }
+  .lvl.high{ background:#F0DAD7; color:var(--brick); }
+  .lvl.med{ background:#F3E4C6; color:#8F6114; }
+  .lvl.low{ background:#DCEAE4; color:var(--teal-deep); }
+  .risk .rdesc{ font-size:8.4pt; color:var(--ink-soft); line-height:1.4; }
+  .risk .rmit{ font-size:8.2pt; color:var(--ink); margin-top:1.6mm; padding-top:1.6mm; border-top:0.25mm dashed var(--line); }
+  .risk .rmit b{ color:var(--teal-deep); }
+
+  .checklist{
+    background:linear-gradient(120deg, var(--ink), #24382D 75%); color:#F4F5EC;
+    border-radius:2.6mm; padding:6mm 7mm; margin:7mm 0 5mm 0;
+  }
+  .checklist .ctitle{ font-size:8.3pt; letter-spacing:0.11em; font-weight:700; color:#CFE3D9; margin-bottom:3mm; }
+  .checklist ul{ list-style:none; columns:2; column-gap:8mm; }
+  .checklist li{ font-size:8.8pt; margin-bottom:2.2mm; padding-left:5mm; position:relative; line-height:1.4; }
+  .checklist li::before{ content:"✓"; position:absolute; left:0; color:var(--amber); font-weight:700; }
+
+  .footer-note{ font-size:7.6pt; color:var(--ink-soft); border-top:0.3mm solid var(--line); padding-top:2.5mm; margin-top:6mm; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="titleblock">
+    <div>
+      <div class="kicker">AIRSENSE · CEP GROUP PROJECT</div>
+      <h1>Execution Plan</h1>
+      <div class="h-sub">Phase 1–3 Build — 3-Month Delivery Cycle</div>
+    </div>
+    <div class="meta">
+      <div><b>Prepared by:</b> Devesh Gujarathi</div>
+      <div><b>Institution:</b> PICT Pune</div>
+      <div><b>Date:</b> 15 September 2026</div>
+      <div><b>Reference:</b> AirSense Quotation, Rs. 40,300</div>
+    </div>
+  </div>
+
+  <div class="snapshot">
+    <div class="cell">
+      <div class="lbl">DURATION</div>
+      <div class="val">3 Months<br>12 Weeks</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">SCOPE</div>
+      <div class="val">Phase 1–3</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">PILOT</div>
+      <div class="val">Pune · Road &amp; Construction Dust</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">BUDGET</div>
+      <div class="val">Rs. 40,300</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">TEAM</div>
+      <div class="val">Solo Founder + Claude Max</div>
+    </div>
+  </div>
+
+  <h2><span class="n">01</span> Scope for This Cycle</h2>
+  <p class="lead">This plan covers everything funded by the current quotation — the prediction backbone, source attribution, and the start of the geospatial affected-zone loop. Later phases are named so nothing gets quietly folded in mid-cycle.</p>
+  <div class="scope-grid">
+    <div class="scope-col in">
+      <div class="stitle">In scope — Phase 1–3</div>
+      <ul>
+        <li>Random Forest / XGBoost / LightGBM forecasting models (24h, 7-day, 30-day)</li>
+        <li>SHAP-based source attribution for SourceAnalysis</li>
+        <li>PostGIS + geocoding for incident → coordinates</li>
+        <li>Wind-informed affected-zone polygon generation</li>
+        <li>Before/after AQI comparison logging (outcome verification MVP)</li>
+      </ul>
+    </div>
+    <div class="scope-col out">
+      <div class="stitle">Deferred — Phase 4–6</div>
+      <ul>
+        <li>Live CPCB/SAMEER/PRANA data integration (pending institutional access)</li>
+        <li>LSTM / deep-learning forecasting (needs live data volume)</li>
+        <li>Anomaly detection for DataProvenance &amp; CommunityFeed</li>
+        <li>Satellite (Sentinel-5P / NASA FIRMS) &amp; CNN spatial modeling</li>
+        <li>Claude Max 20x upgrade, multi-contributor workflow</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="n">02</span> Week-by-Week Timeline</h2>
+  <p class="lead">Three build months, each closing with a working demo and a short written review — so scope drift shows up before it costs a month, not after.</p>
+
+  <div class="month m1">
+    <div class="month-head">
+      <div class="m-title">Month 1 — Core Prediction Backbone</div>
+      <div class="m-sub">Weeks 1–4 · Phase 1</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W1<small>Setup</small></div>
+      <div class="wbody">
+        <div class="wtitle">Environment &amp; data scaffolding</div>
+        <div class="wdesc">Stand up the Python/FastAPI microservice, connect Claude Max + Claude Code to the existing TypeScript repo, wire IMD/Open-Meteo meteorological feeds, and confirm the data model swap-in points already flagged as "drop-in replaceable."</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> Python, FastAPI, Claude Code, IMD/Open-Meteo API</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W2<small>Baseline</small></div>
+      <div class="wbody">
+        <div class="wtitle">30-day AQI trend + inversion-risk models</div>
+        <div class="wdesc">Train Random Forest baselines for the 30-day AQI trend and the meteorological inversion-risk classifier — the most-validated method family in the underlying literature review.</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> scikit-learn, pandas, NumPy</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W3<small>Forecast</small></div>
+      <div class="wbody">
+        <div class="wtitle">24-hour forecast model + component wiring</div>
+        <div class="wdesc">Build the LightGBM/XGBoost 24-hour multivariate forecast and connect model output to CityDetail and Dashboard via the FastAPI endpoint, replacing mock arrays without touching frontend components.</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> LightGBM, XGBoost, Express.js bridge</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W4<small>Review</small></div>
+      <div class="wbody">
+        <div class="wtitle">Validation, AlertsManager hookup, Month-1 demo</div>
+        <div class="wdesc">Backtest forecasts against held-out data, feed AlertsManager from real forecast output instead of a static threshold, and run a short internal demo/review before moving into Phase 2.</div>
+      </div>
+      <div class="wtools"><b>Deliverable:</b> Working forecast API, demo notes</div>
+    </div>
+  </div>
+
+  <div class="month m2">
+    <div class="month-head">
+      <div class="m-title">Month 2 — Source Attribution Layer</div>
+      <div class="m-sub">Weeks 5–8 · Phase 2</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W5<small>SHAP</small></div>
+      <div class="wbody">
+        <div class="wtitle">SHAP integration on the Phase 1 model</div>
+        <div class="wdesc">Add SHAP on top of the existing XGBoost/CatBoost model — no new model family, just an interpretability layer, per the build-in-order sequencing from the ML method review.</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> SHAP, XGBoost/CatBoost</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W6<small>Attribution</small></div>
+      <div class="wbody">
+        <div class="wtitle">Real per-category attribution in SourceAnalysis</div>
+        <div class="wdesc">Replace SourceAnalysis's static mock percentages with live SHAP-driven attribution across road dust, construction, vehicular, and solid-fuel categories.</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> SHAP, SourceAnalysis component</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W7<small>Validate</small></div>
+      <div class="wbody">
+        <div class="wtitle">Cross-check against CPCB/TERI source data</div>
+        <div class="wdesc">Validate attribution output against CPCB's and TERI's Pune source-apportionment studies; use Claude for a plain-language explainability pass so output reads clearly to a non-technical nodal officer.</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> CPCB/TERI reports, Claude (review)</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W8<small>Review</small></div>
+      <div class="wbody">
+        <div class="wtitle">Documentation + Month-2 demo</div>
+        <div class="wdesc">Document Phase 1–2 output for the eventual government-facing submission, and run the second monthly demo/review before starting the geospatial layer.</div>
+      </div>
+      <div class="wtools"><b>Deliverable:</b> SourceAnalysis live, doc pack</div>
+    </div>
+  </div>
+
+  <div class="month m3">
+    <div class="month-head">
+      <div class="m-title">Month 3 — Geospatial Loop Begins</div>
+      <div class="m-sub">Weeks 9–12 · Phase 3 (start)</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W9<small>Geo setup</small></div>
+      <div class="wbody">
+        <div class="wtitle">PostGIS + geocoding pipeline</div>
+        <div class="wdesc">Set up PostgreSQL + PostGIS for spatial storage, prototype affected-zone geometry in QGIS, and wire a reported incident's address/pin to coordinates via Google Maps/Mapbox free tier.</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> PostGIS, QGIS, Maps/Mapbox (free tier)</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W10<small>Zone logic</small></div>
+      <div class="wbody">
+        <div class="wtitle">Wind-informed affected-zone polygon</div>
+        <div class="wdesc">Generate a wind-adjusted affected-zone shape (not a static radius) using the meteorological feed from Phase 1, and render it on InteractiveMap.</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> PostGIS, wind API, InteractiveMap</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W11<small>Outcome</small></div>
+      <div class="wbody">
+        <div class="wtitle">Before/after AQI comparison logging</div>
+        <div class="wdesc">Build the MVP of AirSense's core differentiator — logging AQI before and after a recommended intervention, so "did it actually work" becomes a stored, checkable fact instead of an example.</div>
+      </div>
+      <div class="wtools"><b>Tools:</b> PostGIS, FastAPI</div>
+    </div>
+    <div class="weekrow">
+      <div class="wk">W12<small>Close-out</small></div>
+      <div class="wbody">
+        <div class="wtitle">Integration testing, report, Phase 4–5 ask</div>
+        <div class="wdesc">Run an end-to-end test (incident → source → zone → intervention → measured outcome), submit the financial closure report to the Principal, and prepare the Phase 4–5 follow-on funding request.</div>
+      </div>
+      <div class="wtools"><b>Deliverable:</b> End-to-end demo, financial report</div>
+    </div>
+  </div>
+
+  <h2><span class="n">03</span> Milestones &amp; Deliverables</h2>
+  <table>
+    <tr><th>Milestone</th><th>Target</th><th>Deliverable</th><th>Owner</th></tr>
+    <tr><td class="b">M1 — Forecast backbone live</td><td>End Week 4</td><td>Real Random Forest/LightGBM output feeding CityDetail, Dashboard, AlertsManager</td><td>Devesh + Claude Code</td></tr>
+    <tr><td class="b">M2 — Source attribution live</td><td>End Week 8</td><td>SHAP-driven SourceAnalysis, validated against CPCB/TERI data</td><td>Devesh + Claude Code</td></tr>
+    <tr><td class="b">M3 — Affected-zone MVP</td><td>Week 10</td><td>Wind-adjusted zone polygon rendered on InteractiveMap</td><td>Devesh + Claude Code</td></tr>
+    <tr><td class="b">M4 — Outcome logging MVP</td><td>Week 11</td><td>Before/after AQI comparison stored per incident</td><td>Devesh + Claude Code</td></tr>
+    <tr><td class="b">M5 — Cycle close-out</td><td>Week 12</td><td>End-to-end demo + financial report to Principal</td><td>Devesh</td></tr>
+  </table>
+
+  <h2><span class="n">04</span> Parallel Institutional Track</h2>
+  <p class="lead">These don't block Phase 1–3 coding, but they gate Phase 4–5 — so they're requested from Week 1, not Week 10.</p>
+  <table>
+    <tr><th>Request</th><th>Submit by</th><th>Why it can't wait</th></tr>
+    <tr><td class="b">CPCB SAMEER / PRANA data access</td><td>Week 1</td><td>Formal institutional approval can take time; this is the ground-truth dependency for Phase 4's live-data work.</td></tr>
+    <tr><td class="b">Sentinel-5P / NASA FIRMS account</td><td>Week 2</td><td>Prerequisite for Phase 6's spatial-grid (CNN) work — account approval is slow, so requested early even though unused until later.</td></tr>
+    <tr><td class="b">Library access renewal</td><td>Week 1</td><td>Continued access to the air-quality ML literature the method choices in this plan are built on.</td></tr>
+  </table>
+
+  <h2><span class="n">05</span> Risks &amp; Contingency</h2>
+  <div class="risk-grid">
+    <div class="risk">
+      <div class="rtitle">Data-access delay <span class="lvl med">MEDIUM</span></div>
+      <div class="rdesc">CPCB/PRANA institutional approval takes longer than 3 months.</div>
+      <div class="rmit"><b>Mitigation:</b> Phase 1–3 is scoped to run entirely on IMD/Open-Meteo + mock-to-synthetic incident data, so this delay does not block the current cycle — only Phase 4.</div>
+    </div>
+    <div class="risk">
+      <div class="rtitle">Single-developer bandwidth <span class="lvl med">MEDIUM</span></div>
+      <div class="rdesc">Solo-founder build across ML, backend, and geospatial work in parallel with coursework.</div>
+      <div class="rmit"><b>Mitigation:</b> Claude Max functions as a second engineer for scaffolding, debugging, and documentation — the reason this plan requests Max over Pro for this cycle.</div>
+    </div>
+    <div class="risk">
+      <div class="rtitle">Maps/geocoding usage spike <span class="lvl low">LOW</span></div>
+      <div class="rdesc">Google Maps/Mapbox usage exceeds free-tier allowance during Phase 3 testing.</div>
+      <div class="rmit"><b>Mitigation:</b> Pilot-scale Pune traffic sits well inside free tiers (Section 4 of the quotation); the Rs. 1,000 reserve covers a short-term overage if needed.</div>
+    </div>
+    <div class="risk">
+      <div class="rtitle">Scope creep into Phase 4–6 <span class="lvl high">HIGH</span></div>
+      <div class="rdesc">Temptation to start live-data/LSTM/satellite work before the Phase 1–3 backbone is validated.</div>
+      <div class="rmit"><b>Mitigation:</b> Section 1's "deferred" list is explicit and reviewed at each month's close-out demo — nothing moves into scope without a new funding ask.</div>
+    </div>
+  </div>
+
+  <div class="checklist">
+    <div class="ctitle">EXIT CHECKLIST — BEFORE REQUESTING PHASE 4–5 FUNDING</div>
+    <ul>
+      <li>24h / 7-day / 30-day forecast models live and validated</li>
+      <li>SourceAnalysis running on real SHAP attribution, not mock data</li>
+      <li>Affected-zone polygon rendering correctly on InteractiveMap</li>
+      <li>At least one incident logged end-to-end with before/after AQI</li>
+      <li>Financial report submitted to Principal, Rs. 40,300 accounted for</li>
+      <li>CPCB/PRANA access request status confirmed (approved or still pending)</li>
+    </ul>
+  </div>
+
+  <div class="footer-note">
+    <div>AirSense — CEP Group Project · Devesh Gujarathi, PICT Pune</div>
+    <div>Execution Plan — Phase 1–3, 3-Month Cycle</div>
+  </div>
+
+</div>
+</body>
+</html>
