@@ -1,0 +1,131 @@
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from typing import List
+import uuid
+
+from .database import engine, Base, get_db
+from . import models, schemas
+
+# Initialize SQLite database tables (creates airsense.db if not present)
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="AirSense — Nodal Officer Triage API",
+    description="Backend microservice for complaint ingestion, hotspot clustering, priority ranking, and resolution tracking.",
+    version="1.0.0"
+)
+
+# Enable CORS so the React frontend (running on port 3000 / 5173) can talk to FastAPI
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins for local hackathon development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/", tags=["Health"])
+def root():
+    """
+    Root health check endpoint.
+    """
+    return {
+        "project": "AirSense Urban Pollution Response System",
+        "service": "FastAPI Nodal Officer Backend",
+        "status": "online",
+        "docs_url": "/docs",
+        "mode": "parallel_safe (frontend mock data is untouched)"
+    }
+
+
+@app.get("/api/health", tags=["Health"])
+def health_check(db: Session = Depends(get_db)):
+    """
+    Database connectivity check and counts.
+    """
+    complaint_count = db.query(models.Complaint).count()
+    cluster_count = db.query(models.Cluster).count()
+    action_count = db.query(models.Action).count()
+
+    return {
+        "status": "healthy",
+        "database": "SQLite (airsense.db connected)",
+        "counts": {
+            "complaints": complaint_count,
+            "clusters": cluster_count,
+            "actions": action_count
+        }
+    }
+
+
+# ==================== COMPLAINTS API ====================
+
+@app.get("/api/complaints", response_model=List[schemas.ComplaintOut], tags=["Complaints"])
+def get_complaints(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve list of ingested complaints.
+    """
+    complaints = db.query(models.Complaint).offset(skip).limit(limit).all()
+    return complaints
+
+
+@app.post("/api/complaints", response_model=schemas.ComplaintOut, status_code=201, tags=["Complaints"])
+def create_complaint(complaint_in: schemas.ComplaintCreate, db: Session = Depends(get_db)):
+    """
+    Ingest a single citizen pollution report.
+    """
+    complaint_id = complaint_in.complaint_id or f"CMP-{uuid.uuid4().hex[:8].upper()}"
+    db_complaint = models.Complaint(
+        complaint_id=complaint_id,
+        lat=complaint_in.lat,
+        lng=complaint_in.lng,
+        category=complaint_in.category,
+        description=complaint_in.description,
+        reported_aqi=complaint_in.reported_aqi,
+        timestamp=complaint_in.timestamp
+    )
+    db.add(db_complaint)
+    db.commit()
+    db.refresh(db_complaint)
+    return db_complaint
+
+
+@app.post("/api/complaints/ingest", response_model=dict, status_code=201, tags=["Complaints"])
+def bulk_ingest_complaints(complaints_in: List[schemas.ComplaintCreate], db: Session = Depends(get_db)):
+    """
+    Day 2 Endpoint: Bulk ingest synthetic or batch complaints (e.g. 500-1000 reports).
+    """
+    records = []
+    for c in complaints_in:
+        complaint_id = c.complaint_id or f"CMP-{uuid.uuid4().hex[:8].upper()}"
+        record = models.Complaint(
+            complaint_id=complaint_id,
+            lat=c.lat,
+            lng=c.lng,
+            category=c.category,
+            description=c.description,
+            reported_aqi=c.reported_aqi,
+            timestamp=c.timestamp
+        )
+        records.append(record)
+    
+    db.add_all(records)
+    db.commit()
+    return {
+        "status": "success",
+        "ingested_count": len(records),
+        "message": f"Successfully ingested {len(records)} complaints into database"
+    }
+
+
+# ==================== CLUSTERS API ====================
+
+@app.get("/api/clusters", response_model=List[schemas.ClusterOut], tags=["Clusters"])
+def get_clusters(db: Session = Depends(get_db)):
+    """
+    Retrieve all grouped incident clusters.
+    """
+    clusters = db.query(models.Cluster).all()
+    return clusters
