@@ -20,6 +20,7 @@ import {
   Flame,
   X,
   Compass,
+  Radio,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getAQIBandInfo } from '../utils/aqiCalculations';
@@ -66,6 +67,7 @@ export const Header: React.FC = () => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const primaryNavItems: { id: ActiveTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'nodal-officer', label: 'Nodal Officer (Triage)', icon: Radio },
     { id: 'dashboard', label: 'Dashboard', icon: Wind },
     { id: 'map', label: 'AQI Map', icon: MapIcon },
     { id: 'city-detail', label: 'Forecast & Trends', icon: BarChart3 },

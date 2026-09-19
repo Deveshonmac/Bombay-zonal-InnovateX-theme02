@@ -18,6 +18,7 @@ import { AwarenessHub } from './components/AwarenessHub';
 import { AlertsManager } from './components/AlertsManager';
 import { DataProvenance } from './components/DataProvenance';
 import { AdminConsole } from './components/AdminConsole';
+import { NodalOfficerTriage } from './components/NodalOfficerTriage';
 import { Wind, Shield, Heart, Globe, Sparkles } from 'lucide-react';
 
 const MainContent: React.FC = () => {
@@ -28,6 +29,7 @@ const MainContent: React.FC = () => {
       <Header />
 
       <main className="flex-1">
+        {activeTab === 'nodal-officer' && <NodalOfficerTriage />}
         {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'map' && <InteractiveMap />}
         {activeTab === 'city-detail' && <CityDetail />}

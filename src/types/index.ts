@@ -238,4 +238,5 @@ export type ActiveTab =
   | 'community-reports'
   | 'alerts'
   | 'provenance'
-  | 'admin-console';
+  | 'admin-console'
+  | 'nodal-officer';
