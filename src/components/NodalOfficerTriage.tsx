@@ -81,10 +81,158 @@ interface ImpactSummary {
   }>;
 }
 
+const FALLBACK_CLUSTERS: PrioritizedCluster[] = [
+  {
+    id: 1,
+    rank: 1,
+    name: 'Bhosari MIDC - Industrial',
+    category: 'industrial',
+    status: 'open',
+    complaint_count: 139,
+    center_lat: 18.626864,
+    center_lng: 73.840341,
+    radius_meters: 2500,
+    priority_score: 95.13,
+    urgency_level: 'CRITICAL',
+    sla_target: 'Within 4 hours',
+    avg_aqi: 363.0,
+    hours_open: 24.6,
+    score_breakdown: {
+      volume_component: 32.43,
+      severity_component: 25.0,
+      aqi_component: 22.69,
+      time_open_component: 15.0,
+    },
+    weights: {
+      volume_weight: '35%',
+      severity_weight: '25%',
+      aqi_weight: '25%',
+      time_open_weight: '15%',
+    },
+    justification: 'Ranked CRITICAL (95.13/100) due to 139 citizen reports of Industrial emissions, local zone AQI averaging 363, and 24.6h elapsed time.',
+  },
+  {
+    id: 2,
+    rank: 2,
+    name: 'Hadapsar / Magarpatta - Construction Dust',
+    category: 'construction_dust',
+    status: 'open',
+    complaint_count: 160,
+    center_lat: 18.509013,
+    center_lng: 73.925724,
+    radius_meters: 2040,
+    priority_score: 88.92,
+    urgency_level: 'CRITICAL',
+    sla_target: 'Within 4 hours',
+    avg_aqi: 322.7,
+    hours_open: 24.6,
+    score_breakdown: {
+      volume_component: 35.0,
+      severity_component: 18.75,
+      aqi_component: 20.17,
+      time_open_component: 15.0,
+    },
+    weights: {
+      volume_weight: '35%',
+      severity_weight: '25%',
+      aqi_weight: '25%',
+      time_open_weight: '15%',
+    },
+    justification: 'Ranked CRITICAL (88.92/100) due to 160 citizen reports of Construction Dust, local zone AQI averaging 323, and 24.6h elapsed time.',
+  },
+  {
+    id: 3,
+    rank: 3,
+    name: 'Shivaji Nagar / FC Road - Vehicular',
+    category: 'vehicular',
+    status: 'open',
+    complaint_count: 170,
+    center_lat: 18.531083,
+    center_lng: 73.844568,
+    radius_meters: 2249,
+    priority_score: 84.84,
+    urgency_level: 'CRITICAL',
+    sla_target: 'Within 4 hours',
+    avg_aqi: 295.2,
+    hours_open: 24.6,
+    score_breakdown: {
+      volume_component: 35.0,
+      severity_component: 16.25,
+      aqi_component: 18.45,
+      time_open_component: 15.0,
+    },
+    weights: {
+      volume_weight: '35%',
+      severity_weight: '25%',
+      aqi_weight: '25%',
+      time_open_weight: '15%',
+    },
+    justification: 'Ranked CRITICAL (84.84/100) due to 170 citizen reports of Vehicular exhaust, local zone AQI averaging 295, and 24.6h elapsed time.',
+  },
+  {
+    id: 4,
+    rank: 4,
+    name: 'Viman Nagar / Wadgaon Sheri - Garbage Burning',
+    category: 'garbage_burning',
+    status: 'open',
+    complaint_count: 70,
+    center_lat: 18.569472,
+    center_lng: 73.914054,
+    radius_meters: 1705,
+    priority_score: 71.31,
+    urgency_level: 'HIGH',
+    sla_target: 'Within 12 hours',
+    avg_aqi: 275.0,
+    hours_open: 24.6,
+    score_breakdown: {
+      volume_component: 16.33,
+      severity_component: 22.5,
+      aqi_component: 17.19,
+      time_open_component: 15.0,
+    },
+    weights: {
+      volume_weight: '35%',
+      severity_weight: '25%',
+      aqi_weight: '25%',
+      time_open_weight: '15%',
+    },
+    justification: 'Ranked HIGH (71.31/100) due to 70 citizen reports of Garbage Burning, local zone AQI averaging 275, and 24.6h elapsed time.',
+  },
+  {
+    id: 5,
+    rank: 5,
+    name: 'Kothrud / ARAI - Biomass Burning',
+    category: 'biomass_burning',
+    status: 'open',
+    complaint_count: 80,
+    center_lat: 18.507127,
+    center_lng: 73.807933,
+    radius_meters: 2500,
+    priority_score: 62.4,
+    urgency_level: 'HIGH',
+    sla_target: 'Within 12 hours',
+    avg_aqi: 240.0,
+    hours_open: 24.6,
+    score_breakdown: {
+      volume_component: 18.67,
+      severity_component: 13.75,
+      aqi_component: 15.0,
+      time_open_component: 15.0,
+    },
+    weights: {
+      volume_weight: '35%',
+      severity_weight: '25%',
+      aqi_weight: '25%',
+      time_open_weight: '15%',
+    },
+    justification: 'Ranked HIGH (62.4/100) due to 80 citizen reports of Biomass Burning, local zone AQI averaging 240, and 24.6h elapsed time.',
+  },
+];
+
 export const NodalOfficerTriage: React.FC = () => {
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
-  const [clusters, setClusters] = useState<PrioritizedCluster[]>([]);
-  const [selectedClusterId, setSelectedClusterId] = useState<number | null>(null);
+  const [clusters, setClusters] = useState<PrioritizedCluster[]>(FALLBACK_CLUSTERS);
+  const [selectedClusterId, setSelectedClusterId] = useState<number | null>(1);
   const [selectedClusterDetails, setSelectedClusterDetails] = useState<any | null>(null);
   const [impactSummary, setImpactSummary] = useState<ImpactSummary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -114,7 +262,7 @@ export const NodalOfficerTriage: React.FC = () => {
       setClusters(priorityData);
 
       // Select first cluster by default
-      if (priorityData.length > 0 && selectedClusterId === null) {
+      if (priorityData.length > 0) {
         setSelectedClusterId(priorityData[0].id);
       }
 
@@ -123,8 +271,10 @@ export const NodalOfficerTriage: React.FC = () => {
       const impactData = await impactRes.json();
       setImpactSummary(impactData);
     } catch (err) {
-      console.warn('Backend connection error:', err);
+      console.warn('Backend connection error, activating demo fallback dataset:', err);
       setBackendOnline(false);
+      setClusters(FALLBACK_CLUSTERS);
+      setSelectedClusterId(1);
     } finally {
       setLoading(false);
     }
