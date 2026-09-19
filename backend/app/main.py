@@ -5,7 +5,7 @@ from typing import List
 import uuid
 
 from .database import engine, Base, get_db
-from . import models, schemas, clustering, priority
+from . import models, schemas, clustering, priority, ai_recommendations
 
 # Initialize SQLite database tables (creates airsense.db if not present)
 Base.metadata.create_all(bind=engine)
@@ -160,3 +160,37 @@ def get_cluster(cluster_id: int, db: Session = Depends(get_db)):
     if not cluster:
         raise HTTPException(status_code=404, detail="Cluster not found")
     return cluster
+
+
+@app.post("/api/clusters/{cluster_id}/recommend", response_model=dict, tags=["Clusters"])
+def generate_cluster_recommendation(cluster_id: int, db: Session = Depends(get_db)):
+    """
+    Day 5 Endpoint: Calls Google Gemini AI to generate a ready-to-act municipal recommendation
+    based on the incident cluster's location, category, severity, AQI, and citizen complaints.
+    """
+    cluster = db.query(models.Cluster).filter(models.Cluster.id == cluster_id).first()
+    if not cluster:
+        raise HTTPException(status_code=404, detail="Cluster not found")
+
+    complaints = db.query(models.Complaint).filter(models.Complaint.cluster_id == cluster.id).all()
+    priority_info = priority.compute_priority_for_cluster(cluster, complaints)
+
+    # Generate recommendation via Gemini 3.6 Flash (or fallback)
+    recommendation_text = ai_recommendations.get_recommendation_for_cluster(cluster, complaints, priority_info)
+
+    # Save generated recommendation to database
+    cluster.recommendation = recommendation_text
+    cluster.status = "in_review"
+    db.commit()
+    db.refresh(cluster)
+
+    return {
+        "status": "success",
+        "cluster_id": cluster.id,
+        "cluster_name": cluster.name,
+        "category": cluster.category,
+        "urgency_level": priority_info["urgency_level"],
+        "priority_score": priority_info["priority_score"],
+        "sla_target": priority_info["sla_target"],
+        "recommendation": cluster.recommendation
+    }
