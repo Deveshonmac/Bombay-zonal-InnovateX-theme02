@@ -83,14 +83,31 @@ class ClusterPriorityOut(ClusterBase):
 class ActionCreate(BaseModel):
     action_taken: str = Field(..., description="Intervention performed", example="Sprinklers deployed and fine issued")
     officer_notes: Optional[str] = Field(None, description="Detailed observations by nodal officer")
-    aqi_before: float = Field(..., description="AQI snapshot before intervention", example=310.0)
-    aqi_after: Optional[float] = Field(None, description="AQI snapshot measured after intervention", example=185.0)
+    aqi_before: Optional[float] = Field(None, description="AQI snapshot before intervention. If omitted, uses cluster average AQI.")
+    aqi_after: Optional[float] = Field(None, description="AQI measured after intervention. If omitted, modeled post-intervention AQI is calculated.")
 
 
-class ActionOut(ActionCreate):
+class ActionOut(BaseModel):
     id: int
     cluster_id: int
+    cluster_name: Optional[str] = None
+    category: Optional[str] = None
+    action_taken: str
+    officer_notes: Optional[str] = None
+    aqi_before: float
+    aqi_after: float
+    aqi_delta: float
+    percentage_improvement: float
+    complaints_resolved: int
     resolved_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class ImpactSummary(BaseModel):
+    total_incidents_resolved: int
+    total_complaints_resolved: int
+    average_aqi_reduction_points: float
+    average_percentage_improvement: float
+    actions: List[ActionOut]
