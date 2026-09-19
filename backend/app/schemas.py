@@ -53,6 +53,31 @@ class ClusterOut(ClusterBase):
         from_attributes = True
 
 
+class ScoreBreakdown(BaseModel):
+    volume_component: float
+    severity_component: float
+    aqi_component: float
+    time_open_component: float
+
+
+class ClusterPriorityOut(ClusterBase):
+    id: int
+    rank: int
+    urgency_level: str
+    sla_target: str
+    avg_aqi: float
+    hours_open: float
+    score_breakdown: ScoreBreakdown
+    weights: dict
+    justification: str
+    recommendation: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # ==================== ACTION / RESOLUTION SCHEMAS ====================
 
 class ActionCreate(BaseModel):

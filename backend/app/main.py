@@ -5,7 +5,7 @@ from typing import List
 import uuid
 
 from .database import engine, Base, get_db
-from . import models, schemas, clustering
+from . import models, schemas, clustering, priority
 
 # Initialize SQLite database tables (creates airsense.db if not present)
 Base.metadata.create_all(bind=engine)
@@ -139,6 +139,16 @@ def get_clusters(db: Session = Depends(get_db)):
     """
     clusters = db.query(models.Cluster).all()
     return clusters
+
+
+@app.get("/api/clusters/priority", response_model=List[schemas.ClusterPriorityOut], tags=["Clusters"])
+def get_prioritized_clusters(db: Session = Depends(get_db)):
+    """
+    Day 4 Endpoint: Returns all incident clusters sorted in descending order of urgency.
+    Includes a complete explainability breakdown (volume, category severity, AQI, aging factor, justification).
+    """
+    prioritized = priority.get_prioritized_clusters(db)
+    return prioritized
 
 
 @app.get("/api/clusters/{cluster_id}", response_model=schemas.ClusterOut, tags=["Clusters"])
