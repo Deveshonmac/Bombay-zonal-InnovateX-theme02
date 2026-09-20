@@ -29,8 +29,12 @@ import {
   Calculator,
   Award,
   Info,
+  Printer,
+  Play,
 } from 'lucide-react';
 import { NodalHotspotMap } from './NodalHotspotMap';
+import { OfficialDispatchOrderModal, DispatchOrderData } from './OfficialDispatchOrderModal';
+import { JudgeDemoTourModal } from './JudgeDemoTourModal';
 
 const API_BASE = 'http://127.0.0.1:8000/api';
 
@@ -532,6 +536,7 @@ interface DirectiveViewerProps {
   onAdoptAction: (actionText: string, defaultNotes?: string) => void;
   onTriggerGenerate: () => void;
   recLoading: boolean;
+  onExportOrder?: (parsed: any) => void;
 }
 
 const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
@@ -540,6 +545,7 @@ const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
   onAdoptAction,
   onTriggerGenerate,
   recLoading,
+  onExportOrder,
 }) => {
   const [copied, setCopied] = useState(false);
   const [viewMode, setViewMode] = useState<'structured' | 'memo'>('structured');
@@ -634,6 +640,17 @@ const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? 'Copied' : 'Copy'}
           </button>
+
+          {onExportOrder && (
+            <button
+              onClick={() => onExportOrder(parsed)}
+              className="px-3 py-1.5 rounded-lg border border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center gap-1.5 transition shadow-xs"
+              title="Preview and print official government dispatch order"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              Order (PDF)
+            </button>
+          )}
 
           <button
             onClick={() => onAdoptAction(parsed.actions[0]?.action || parsed.probableSource, `Executing protocol for ${cluster.name} under ${parsed.legalBasis}.`)}
@@ -815,6 +832,13 @@ export const NodalOfficerTriage: React.FC = () => {
   const [notesInput, setNotesInput] = useState('');
   const [resolutionSuccess, setResolutionSuccess] = useState<any | null>(null);
 
+  // Judge Demo Tour Modal State
+  const [isJudgeTourOpen, setIsJudgeTourOpen] = useState(false);
+
+  // Official Dispatch Order Modal State
+  const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
+  const [dispatchOrderData, setDispatchOrderData] = useState<DispatchOrderData | null>(null);
+
   // Quick Adopt Action from Directive into Resolution Modal
   const handleAdoptAction = (actionText: string, defaultNotes?: string) => {
     setActionInput(actionText);
@@ -822,6 +846,41 @@ export const NodalOfficerTriage: React.FC = () => {
       setNotesInput(defaultNotes);
     }
     setIsResolveModalOpen(true);
+  };
+
+  // Open Official Dispatch Order Modal
+  const handleOpenDispatchOrder = (parsed: any, targetCluster?: PrioritizedCluster) => {
+    const cluster = targetCluster || clusters.find((c) => c.id === selectedClusterId) || clusters[0];
+    if (!cluster) return;
+
+    const orderNumber = `PMC/ENV-TASKFORCE/2026/ORD-${String(cluster.id).padStart(3, '0')}`;
+    const now = new Date();
+    const issueDate = `${now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at ${now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
+
+    setDispatchOrderData({
+      orderNumber,
+      issueDate,
+      clusterName: cluster.name,
+      category: cluster.category,
+      urgencyLevel: cluster.urgency_level,
+      priorityScore: cluster.priority_score,
+      slaTarget: cluster.sla_target,
+      avgAqi: cluster.avg_aqi,
+      complaintCount: cluster.complaint_count,
+      coordinates: { lat: cluster.center_lat, lng: cluster.center_lng },
+      probableSource: parsed.probableSource || `Active ${cluster.category.replace('_', ' ')} emission source`,
+      groundContext: parsed.groundContext || `Persistent resident complaints gathered within ${cluster.radius_meters}m radius`,
+      actions: parsed.actions && parsed.actions.length > 0 ? parsed.actions : [
+        { timeframe: 'Immediate (0-2h)', action: 'Deploy mobile rapid response and water misting cannon.', assignedUnit: 'PMC Misting Cell', priority: 'P1' },
+        { timeframe: 'Within 4h', action: 'Inspect site perimeter and issue statutory show-cause notice under Air Act.', assignedUnit: 'MPCB Flying Squad', priority: 'P1' },
+        { timeframe: 'Within 8h', action: 'Continuous ambient PM monitoring to verify recovery.', assignedUnit: 'Air Quality Lab', priority: 'P2' },
+      ],
+      leadAgency: parsed.leadAgency || 'Pune Municipal Corporation (PMC) & MPCB Pune',
+      fieldOfficer: parsed.fieldOfficer || 'Ward Executive Engineer & Environmental Officer',
+      legalBasis: parsed.legalBasis || 'Section 31A of Air (Prevention & Control of Pollution) Act 1981',
+      projectedImpact: parsed.projectedImpact || '25% to 35% localized PM reduction within 4 to 6 hours of intervention.',
+    });
+    setIsDispatchModalOpen(true);
   };
 
   // Fetch backend data
@@ -1001,6 +1060,15 @@ export const NodalOfficerTriage: React.FC = () => {
           </div>
 
           <button
+            onClick={() => setIsJudgeTourOpen(true)}
+            className="px-4 py-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:opacity-95 text-white rounded-xl shadow-lg shadow-amber-500/25 transition flex items-center gap-2 text-xs font-black tracking-wide hover:scale-105 active:scale-95"
+            title="Launch 60-second interactive guided demo for hackathon judges"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>⚡ Judge Demo Tour (60s)</span>
+          </button>
+
+          <button
             onClick={fetchData}
             className="p-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl border border-zinc-700 transition flex items-center gap-1 text-xs font-medium"
             title="Refresh pipeline data"
@@ -1099,9 +1167,18 @@ export const NodalOfficerTriage: React.FC = () => {
           </button>
         </div>
 
-        <div className="hidden md:flex items-center gap-2 text-xs text-zinc-500 pr-2">
-          <Shield className="w-3.5 h-3.5 text-sky-500" />
-          <span>PMC Nodal Officer Ops Standard · Pune Metropolitan Region</span>
+        <div className="flex items-center gap-3 pr-2">
+          <button
+            onClick={() => setIsJudgeTourOpen(true)}
+            className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5 transition"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>Judge Guided Tour</span>
+          </button>
+          <div className="hidden lg:flex items-center gap-1.5 text-xs text-zinc-500">
+            <Shield className="w-3.5 h-3.5 text-sky-500" />
+            <span>PMC Nodal Officer Ops Standard</span>
+          </div>
         </div>
       </div>
 
@@ -1289,10 +1366,19 @@ export const NodalOfficerTriage: React.FC = () => {
                       <button
                         onClick={handleGenerateRecommendation}
                         disabled={recLoading}
-                        className="px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5 disabled:opacity-50"
+                        className="px-3.5 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5 disabled:opacity-50"
                       >
                         <Sparkles className={`w-3.5 h-3.5 ${recLoading ? 'animate-spin' : ''}`} />
                         {recLoading ? 'Generating...' : 'AI Recommendation'}
+                      </button>
+
+                      <button
+                        onClick={() => handleOpenDispatchOrder(parseDirective(selectedCluster.recommendation || '', selectedCluster.category, selectedCluster.name), selectedCluster)}
+                        className="px-3.5 py-2 border border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5"
+                        title="Export official printable government order (PDF/Print)"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        Order (PDF)
                       </button>
 
                       <button
@@ -1403,6 +1489,7 @@ export const NodalOfficerTriage: React.FC = () => {
                       onAdoptAction={handleAdoptAction}
                       onTriggerGenerate={handleGenerateRecommendation}
                       recLoading={recLoading}
+                      onExportOrder={handleOpenDispatchOrder}
                     />
                   ) : (
                     <div className="space-y-3 animate-fade-in">
@@ -1539,13 +1626,23 @@ export const NodalOfficerTriage: React.FC = () => {
                 </div>
 
                 <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-2">
-                  <button
-                    onClick={() => setViewTab('queue')}
-                    className="w-full py-2.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Open Tactical Action Protocol
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setViewTab('queue')}
+                      className="flex-1 py-2.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Action Protocol
+                    </button>
+                    <button
+                      onClick={() => handleOpenDispatchOrder(parseDirective(selectedCluster.recommendation || '', selectedCluster.category, selectedCluster.name), selectedCluster)}
+                      className="px-3.5 py-2.5 border border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-700 dark:text-sky-300 text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5"
+                      title="Export printable official government order (PDF)"
+                    >
+                      <Printer className="w-4 h-4" />
+                      Order (PDF)
+                    </button>
+                  </div>
 
                   <button
                     onClick={() => setIsResolveModalOpen(true)}
@@ -1801,6 +1898,23 @@ export const NodalOfficerTriage: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Official Municipal Dispatch Order Modal (Print & PDF Export) */}
+      {dispatchOrderData && (
+        <OfficialDispatchOrderModal
+          isOpen={isDispatchModalOpen}
+          onClose={() => setIsDispatchModalOpen(false)}
+          data={dispatchOrderData}
+        />
+      )}
+
+      {/* 60-Second Interactive Judge Demo Tour Modal */}
+      <JudgeDemoTourModal
+        isOpen={isJudgeTourOpen}
+        onClose={() => setIsJudgeTourOpen(false)}
+        onNavigateTab={(tab) => setViewTab(tab)}
+        onSelectCluster={(clusterId) => setSelectedClusterId(clusterId)}
+      />
     </div>
   );
 };
