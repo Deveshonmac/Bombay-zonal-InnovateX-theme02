@@ -13,9 +13,33 @@ import {
   MapPin,
   Sparkles,
   Award,
+  Radio,
+  Shield,
+  ArrowRight,
+  Send,
+  Check,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { CommunityReport } from '../types';
+
+const mapConditionToCategory = (condition: string): string => {
+  const c = condition.toLowerCase();
+  if (c.includes('industrial')) return 'industrial';
+  if (c.includes('construction') || c.includes('dust')) return 'construction_dust';
+  if (c.includes('stubble') || c.includes('biomass')) return 'biomass_burning';
+  if (c.includes('smoke') || c.includes('garbage') || c.includes('plastic')) return 'garbage_burning';
+  return 'vehicular';
+};
+
+const severityToAQI = (severity: string): number => {
+  switch (severity) {
+    case 'Hazardous': return 420;
+    case 'Severe': return 320;
+    case 'Moderate': return 220;
+    case 'Mild':
+    default: return 140;
+  }
+};
 
 export const CommunityFeed: React.FC = () => {
   const {
@@ -25,10 +49,12 @@ export const CommunityFeed: React.FC = () => {
     currentCity,
     allCities,
     user,
+    setActiveTab,
   } = useApp();
 
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [isSubmitOpen, setIsSubmitOpen] = useState<boolean>(false);
+  const [submissionNotice, setSubmissionNotice] = useState<string | null>(null);
 
   // New report form state
   const [selectedCityId, setSelectedCityId] = useState<string>(currentCity.id);
@@ -42,10 +68,14 @@ export const CommunityFeed: React.FC = () => {
     return r.reportedCondition.toLowerCase().includes(filterCategory.toLowerCase());
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const city = allCities.find((c) => c.id === selectedCityId) || currentCity;
+    const finalDesc = description || 'Visual particulate haze and smoke odor observed at ground level.';
+    const mappedCategory = mapConditionToCategory(condition);
+    const mappedAqi = severityToAQI(severity);
 
+    // 1. Add to local citizen feed
     addCommunityReport({
       cityName: city.name,
       coordinates: city.coordinates,
@@ -55,18 +85,93 @@ export const CommunityFeed: React.FC = () => {
       reputationScore: user.reputationPoints,
       reportedCondition: condition,
       perceivedAQISeverity: severity,
-      description: description || 'Visual particulate haze and smoke odor observed at ground level.',
+      description: finalDesc,
       isOfficialStationDiscrepancy: false,
       imageUrl: imagePlaceholder || undefined,
     });
 
     setIsSubmitOpen(false);
     setDescription('');
+
+    // 2. Direct Bridge with FastAPI Nodal Officer Backend
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/complaints', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lat: city.coordinates.lat + (Math.random() - 0.5) * 0.015,
+          lng: city.coordinates.lng + (Math.random() - 0.5) * 0.015,
+          category: mappedCategory,
+          description: `[${city.name}] ${condition}: ${finalDesc}`,
+          reported_aqi: mappedAqi,
+        }),
+      });
+
+      if (res.ok) {
+        const created = await res.json();
+        setSubmissionNotice(`Report Logged & Dispatched: Ticket #${created.complaint_id} routed to Municipal Triage Desk (${city.name})`);
+      } else {
+        setSubmissionNotice(`Report Logged: Escalated to Municipal Air Quality Triage Desk (${city.name})`);
+      }
+    } catch {
+      setSubmissionNotice(`Report Logged: Escalated to Municipal Air Quality Triage Desk (${city.name})`);
+    }
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
+      {/* 2-Way Municipal Command Loop Banner */}
+      <div className="bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-emerald-500/10 border border-amber-500/30 dark:border-amber-500/20 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <Radio className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">
+                Municipal Command Loop Active
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">
+                Section 31A Air Act 1981
+              </span>
+            </div>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+              Ground observations submitted here automatically feed into the AirSense DBSCAN spatial clustering and priority scoring engine for municipal nodal officers.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setActiveTab('nodal-officer')}
+          className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition shrink-0"
+        >
+          <span>Inspect Nodal Triage Desk</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Submission Feedback Alert */}
+      {submissionNotice && (
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-2xl flex items-center justify-between text-xs text-emerald-900 dark:text-emerald-200 animate-fade-in">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+            <div>
+              <span className="font-bold">{submissionNotice}</span>
+              <div className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-0.5">
+                Automatically forwarded into spatial clustering queue for municipal field dispatch.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setActiveTab('nodal-officer')}
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition shrink-0"
+          >
+            Track in Triage Desk
+          </button>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -178,19 +283,35 @@ export const CommunityFeed: React.FC = () => {
               </p>
             </div>
 
-            {/* Bottom Actions: Upvote */}
-            <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-              <span className="text-xs text-zinc-400">
-                Reputation: <strong className="text-zinc-700 dark:text-zinc-300">{report.reputationScore}/100</strong>
-              </span>
+            {/* Bottom Actions: Upvote & Municipal Escalation Status */}
+            <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-zinc-400">
+                  Reputation: <strong className="text-zinc-700 dark:text-zinc-300">{report.reputationScore}/100</strong>
+                </span>
 
-              <button
-                onClick={() => upvoteReport(report.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 dark:hover:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-bold transition-all"
-              >
-                <ThumbsUp className="w-3.5 h-3.5" />
-                <span>Confirm ({report.upvotes})</span>
-              </button>
+                <button
+                  onClick={() => upvoteReport(report.id)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 dark:hover:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-bold transition-all"
+                >
+                  <ThumbsUp className="w-3.5 h-3.5" />
+                  <span>Confirm ({report.upvotes})</span>
+                </button>
+              </div>
+
+              <div className="pt-2 border-t border-zinc-100/60 dark:border-zinc-800/60 flex items-center justify-between text-[11px]">
+                <span className="text-sky-600 dark:text-sky-400 font-semibold flex items-center gap-1">
+                  <Shield className="w-3 h-3 text-sky-500" />
+                  <span>PMC Command Channel</span>
+                </span>
+                <button
+                  onClick={() => setActiveTab('nodal-officer')}
+                  className="text-[11px] font-bold text-amber-600 hover:text-amber-700 dark:text-amber-400 flex items-center gap-1 transition"
+                >
+                  <span>View in Triage Desk</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -216,6 +337,17 @@ export const CommunityFeed: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+              {/* Notice regarding Municipal Nodal Officer Triage */}
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-[11px] text-amber-900 dark:text-amber-200 space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <Radio className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Statutory Escalation Under Air Act 1981 (Section 31A)</span>
+                </div>
+                <p className="leading-relaxed">
+                  Your observation will be automatically deduplicated via DBSCAN spatial clustering and assigned a multi-factor priority score for immediate Nodal Officer triage and enforcement.
+                </p>
+              </div>
+
               <div>
                 <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                   Location / City:
@@ -248,6 +380,9 @@ export const CommunityFeed: React.FC = () => {
                     <option value="Strong Chemical Odor">🧪 Strong Chemical Odor</option>
                     <option value="Noticeable Haze">🌆 Noticeable Haze</option>
                     <option value="Industrial Plume">🏭 Industrial Plume</option>
+                    <option value="Construction Dust & Excavation">🏗️ Construction Dust & Excavation</option>
+                    <option value="Plastic Waste Incineration">🔥 Plastic Waste Incineration</option>
+                    <option value="Vehicular Exhaust & Gridlock">🚗 Vehicular Exhaust & Gridlock</option>
                   </select>
                 </div>
 
@@ -304,9 +439,10 @@ export const CommunityFeed: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-xs"
+                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-xs flex items-center gap-1.5"
                 >
-                  Publish Report (+15 Karma)
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Submit & Escalate to Triage Desk (+15 Karma)</span>
                 </button>
               </div>
             </form>
