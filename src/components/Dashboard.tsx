@@ -1,1046 +1,569 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Menu, 
-  Radio, 
-  ListOrdered, 
-  PanelRightOpen, 
-  PanelLeftOpen,
-  Sun,
-  Moon
+import React from 'react';
+import {
+  Wind,
+  Shield,
+  ShieldAlert,
+  Activity,
+  Thermometer,
+  Bookmark,
+  BookmarkCheck,
+  ChevronRight,
+  Flame,
+  Home,
+  CheckCircle2,
+  Droplets,
+  Eye,
+  Zap,
 } from 'lucide-react';
-import { Sidebar } from './Sidebar';
-import { InteractiveMap } from './InteractiveMap';
-import { PriorityQueue } from './PriorityQueue';
-import { ClusterDetail } from './ClusterDetail';
-import { AdminActionModal } from './AdminActionModal';
-import { AuditLogsView } from './AuditLogsView';
-import { SystemHealthView } from './SystemHealthView';
-import { ImpactLogView } from './ImpactLogView';
-import { ResolveIncidentModal } from './ResolveIncidentModal';
-import { SettingsView } from './SettingsView';
-import { OfficerWalkthrough } from './OfficerWalkthrough';
-import { ErrorBoundary } from './ErrorBoundary';
-import { useTheme } from '../context/ThemeContext';
-import { useSettings } from '../context/SettingsContext';
-import { 
-  IncidentCluster, 
-  ComplaintCategory, 
-  TicketStatus, 
-  AuditActionLog, 
-  NavTab,
-  ResolutionRecord
-} from '../types';
-import { INITIAL_CLUSTERS, INITIAL_AUDIT_LOGS } from '../data/mockData';
+import { useApp } from '../context/AppContext';
+import { getAQIBandInfo, calculateSmartRecommendations } from '../utils/aqiCalculations';
+import { PollutantValues } from '../types';
 
 export const Dashboard: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
-  const { t, user } = useSettings();
-  const [clusters, setClusters] = useState<IncidentCluster[]>(INITIAL_CLUSTERS);
-  const [auditLogs, setAuditLogs] = useState<AuditActionLog[]>(INITIAL_AUDIT_LOGS);
-  const [selectedClusterId, setSelectedClusterId] = useState<string | null>('CLUST-PUN-02');
-  
-  // Navigation tab state: 'triage' | 'queue' | 'impact_log' | 'audit_logs' | 'system_health'
-  const [currentTab, setCurrentTab] = useState<NavTab>('triage');
+  const {
+    currentCity,
+    allCities,
+    selectCityById,
+    toggleSaveCity,
+    isCitySaved,
+    colorblindMode,
+    user,
+    setActiveTab,
+  } = useApp();
 
-  // Category and search filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'all' | ComplaintCategory>('all');
+  const bandInfo = getAQIBandInfo(currentCity.aqi, colorblindMode);
+  const healthRecs = calculateSmartRecommendations(currentCity.aqi, user.healthProfile);
+  const isSaved = isCitySaved(currentCity.id);
 
-  // Active admin modal target
-  const [adminModalCluster, setAdminModalCluster] = useState<IncidentCluster | null>(null);
-  const [adminModalPrefill, setAdminModalPrefill] = useState<{
-    targetAgency?: string;
-    directive?: string;
-    legalProvision?: string;
-    rationale?: string;
-  } | undefined>(undefined);
+  // Sort cities for rankings
+  const mostPolluted = [...allCities].sort((a, b) => b.aqi - a.aqi).slice(0, 5);
+  const cleanestCities = [...allCities].sort((a, b) => a.aqi - b.aqi).slice(0, 5);
 
-  // Active resolution modal target
-  const [resolveModalCluster, setResolveModalCluster] = useState<IncidentCluster | null>(null);
-
-  // Guided Officer Tour state
-  const [isTourOpen, setIsTourOpen] = useState(false);
-
-  // Tour step orchestrator: automatically switches dashboard tabs, panes, and modals
-  const handleTourStepChange = (stepIndex: number) => {
-    // Ensure we pick an active cluster with tickets for rich demonstration
-    const activeCluster = clusters.find(c => c.cluster_id === 'CLUST-PUN-02') || clusters[0];
-    if (activeCluster && selectedClusterId !== activeCluster.cluster_id) {
-      setSelectedClusterId(activeCluster.cluster_id);
-    }
-
-    if (stepIndex === 0) {
-      // Step 1: Target [data-tour="hotspot-pin"] on InteractiveMap
-      setCurrentTab('triage');
-      setMobileTriageView('map');
-      setRightPaneView('queue');
-      setResolveModalCluster(null);
-      setAdminModalCluster(null);
-      setIsQueueCollapsed(false);
-    } else if (stepIndex === 1) {
-      // Step 2: Target [data-tour="inspect-btn"] inside hotspot popup
-      setCurrentTab('triage');
-      setMobileTriageView('map');
-      setRightPaneView('queue');
-      setResolveModalCluster(null);
-      setAdminModalCluster(null);
-      setIsQueueCollapsed(false);
-      // Ensure the popup for the selected cluster is open
-      setTimeout(() => {
-        window.dispatchEvent(new Event('leaflet-invalidate-size'));
-      }, 100);
-    } else if (stepIndex === 2) {
-      // Step 3: Target [data-tour="explainability-btn"] on top priority queue card
-      setCurrentTab('triage');
-      setRightPaneView('queue');
-      setIsQueueCollapsed(false);
-      setMobileTriageView('queue');
-      setResolveModalCluster(null);
-      setAdminModalCluster(null);
-    } else if (stepIndex === 3) {
-      // Step 4: Target [data-tour="generate-directive-btn"] in ClusterDetail.tsx
-      setCurrentTab('triage');
-      setRightPaneView('detail');
-      setIsQueueCollapsed(false);
-      setResolveModalCluster(null);
-      setAdminModalCluster(null);
-    } else if (stepIndex === 4) {
-      // Step 5: Target [data-tour="mark-actioned-btn"]
-      setCurrentTab('triage');
-      setRightPaneView('detail');
-      setIsQueueCollapsed(false);
-      setResolveModalCluster(null);
-      setAdminModalCluster(null);
-    } else if (stepIndex === 5) {
-      // Step 6: Target [data-tour="submit-resolution-btn"] inside ResolveIncidentModal.tsx
-      setCurrentTab('triage');
-      if (activeCluster) {
-        setResolveModalCluster(activeCluster);
-      }
-    }
+  const pollutantMeta: Record<
+    keyof PollutantValues,
+    { name: string; short: string; unit: string; whoLimit: number; impact: string }
+  > = {
+    pm25: {
+      name: 'Fine Particles (PM2.5)',
+      short: 'PM2.5',
+      unit: 'µg/m³',
+      whoLimit: 15,
+      impact: 'Deep lung & blood entry',
+    },
+    pm10: {
+      name: 'Coarse Dust (PM10)',
+      short: 'PM10',
+      unit: 'µg/m³',
+      whoLimit: 45,
+      impact: 'Airway & throat irritation',
+    },
+    no2: {
+      name: 'Nitrogen Dioxide (NO2)',
+      short: 'NO2',
+      unit: 'µg/m³',
+      whoLimit: 25,
+      impact: 'Vehicle & diesel exhaust',
+    },
+    so2: {
+      name: 'Sulfur Dioxide (SO2)',
+      short: 'SO2',
+      unit: 'µg/m³',
+      whoLimit: 40,
+      impact: 'Industrial & coal emissions',
+    },
+    co: {
+      name: 'Carbon Monoxide (CO)',
+      short: 'CO',
+      unit: 'mg/m³',
+      whoLimit: 4,
+      impact: 'Incomplete combustion',
+    },
+    o3: {
+      name: 'Surface Ozone (O3)',
+      short: 'O3',
+      unit: 'µg/m³',
+      whoLimit: 100,
+      impact: 'Sunlight photochemical smog',
+    },
   };
 
-  // Launch guided walkthrough: switches activeView to 'map' / 'triage' and triggers Step 1 immediately
-  const handleStartTour = useCallback(() => {
-    setCurrentTab('triage');
-    setMobileTriageView('map');
-    setRightPaneView('queue');
-    setIsQueueCollapsed(false);
-    setResolveModalCluster(null);
-    setAdminModalCluster(null);
-
-    const activeCluster = clusters.find(c => c.cluster_id === 'CLUST-PUN-02') || clusters[0];
-    if (activeCluster) {
-      setSelectedClusterId(activeCluster.cluster_id);
-    }
-
-    // Explicitly reset step orchestrator to Step 1 (index 0)
-    handleTourStepChange(0);
-
-    setTimeout(() => {
-      window.dispatchEvent(new Event('leaflet-invalidate-size'));
-      window.dispatchEvent(new Event('resize'));
-    }, 60);
-
-    setIsTourOpen(true);
-  }, [clusters]);
-
-  // Right pane view mode: 'queue' (default) or 'detail'
-  const [rightPaneView, setRightPaneView] = useState<'queue' | 'detail'>('queue');
-
-  // Collapsible Right Pane state (desktop)
-  const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
-
-  // Resizable Right Sidebar state (clamped between 300px and 650px, default 420px)
-  const [sidebarWidth, setSidebarWidth] = useState(420);
-  const [isDragging, setIsDragging] = useState(false);
-  const triageContainerRef = useRef<HTMLDivElement>(null);
-
-  // 1. Resizable & Fully Collapsible Left Sidebar state
-  // Clamped between 180px and 380px, default 250px. When dragged < 130px, snaps to complete collapse.
-  const [leftSidebarWidth, setLeftSidebarWidth] = useState(250);
-  const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
-  const [isLeftDragging, setIsLeftDragging] = useState(false);
-  const previousLeftWidth = useRef(250);
-
-  // Desktop media check to prevent style overriding on mobile
-  const [isDesktop, setIsDesktop] = useState(
-    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Left Sidebar Drag Handler: smooth resizing with requestAnimationFrame + snap to complete collapse (< 130px)
-  useEffect(() => {
-    if (!isLeftDragging) return;
-
-    let rafId: number | null = null;
-    const originalCursor = document.body.style.cursor;
-    const originalUserSelect = document.body.style.userSelect;
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const rawWidth = e.clientX;
-        if (rawWidth < 130) {
-          setIsLeftSidebarCollapsed(true);
-        } else {
-          setIsLeftSidebarCollapsed(false);
-          const clamped = Math.min(380, Math.max(180, rawWidth));
-          setLeftSidebarWidth(clamped);
-          previousLeftWidth.current = clamped;
-        }
-      });
-    };
-
-    const handleMouseUp = () => {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      setIsLeftDragging(false);
-      document.body.style.cursor = originalCursor;
-      document.body.style.userSelect = originalUserSelect;
-      window.dispatchEvent(new Event('leaflet-invalidate-size'));
-      window.dispatchEvent(new Event('resize'));
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
-      document.body.style.cursor = originalCursor;
-      document.body.style.userSelect = originalUserSelect;
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isLeftDragging]);
-
-  const handleLeftDragStart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsLeftDragging(true);
-  };
-
-  // Right Sidebar Drag Handler: smooth resizing with requestAnimationFrame + snap to complete collapse (< 220px)
-  useEffect(() => {
-    if (!isDragging) return;
-
-    let rafId: number | null = null;
-    const originalCursor = document.body.style.cursor;
-    const originalUserSelect = document.body.style.userSelect;
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        if (!triageContainerRef.current) return;
-        const rect = triageContainerRef.current.getBoundingClientRect();
-        const rawWidth = rect.right - e.clientX;
-        
-        if (rawWidth < 220) {
-          setIsQueueCollapsed(true);
-        } else {
-          setIsQueueCollapsed(false);
-          const clamped = Math.min(650, Math.max(300, rawWidth));
-          setSidebarWidth(clamped);
-        }
-      });
-    };
-
-    const handleMouseUp = () => {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      setIsDragging(false);
-      document.body.style.cursor = originalCursor;
-      document.body.style.userSelect = originalUserSelect;
-      window.dispatchEvent(new Event('leaflet-invalidate-size'));
-      window.dispatchEvent(new Event('resize'));
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
-      document.body.style.cursor = originalCursor;
-      document.body.style.userSelect = originalUserSelect;
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging]);
-
-  const handleDragStart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  // Mobile navigation drawer state
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-
-  // Mobile triage view toggle: 'map' (default) or 'queue'
-  const [mobileTriageView, setMobileTriageView] = useState<'map' | 'queue'>('map');
-
-  // Aggregate metrics
-  const criticalCount = useMemo(() => {
-    return clusters.filter(c => c.hours_remaining < 6 && c.status !== 'resolved').length;
-  }, [clusters]);
-
-  const openCount = useMemo(() => {
-    return clusters.filter(c => c.status !== 'resolved').length;
-  }, [clusters]);
-
-  const totalComplaints = useMemo(() => {
-    return clusters.reduce((acc, c) => acc + c.complaint_count, 0);
-  }, [clusters]);
-
-  const resolvedCount = useMemo(() => {
-    return clusters.filter(c => c.status === 'resolved' || c.resolution).length;
-  }, [clusters]);
-
-  // Selected cluster object
-  const selectedCluster = useMemo(() => {
-    return clusters.find(c => c.cluster_id === selectedClusterId) || null;
-  }, [clusters, selectedClusterId]);
-
-  // Global Keyboard Shortcuts & Event Listeners
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const activeEl = document.activeElement;
-      const isInput = activeEl?.tagName === 'INPUT' || activeEl?.tagName === 'TEXTAREA' || activeEl?.tagName === 'SELECT';
-
-      // Toggle Left sidebar with [ or Cmd+\ or Ctrl+\
-      if (((e.metaKey || e.ctrlKey) && e.key === '\\') || (!isInput && e.key === '[')) {
-        e.preventDefault();
-        setIsLeftSidebarCollapsed(prev => !prev);
-        window.dispatchEvent(new Event('leaflet-invalidate-size'));
-        return;
-      }
-
-      // Toggle Right sidebar with Cmd+B, Ctrl+B, or ]
-      if (((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') || (!isInput && e.key === ']')) {
-        e.preventDefault();
-        setIsQueueCollapsed(prev => !prev);
-        window.dispatchEvent(new Event('leaflet-invalidate-size'));
-        return;
-      }
-
-      // Toggle theme with 'd' when not typing
-      if (!isInput && !e.metaKey && !e.ctrlKey && e.key.toLowerCase() === 'd') {
-        e.preventDefault();
-        toggleTheme();
-        return;
-      }
-
-      if (e.key === 'Escape') {
-        if (resolveModalCluster) {
-          setResolveModalCluster(null);
-        } else if (adminModalCluster) {
-          setAdminModalCluster(null);
-          setAdminModalPrefill(undefined);
-        } else if (rightPaneView === 'detail') {
-          setRightPaneView('queue');
-        } else if (currentTab !== 'triage') {
-          setCurrentTab('triage');
-        }
-      }
-    };
-
-    const handleCustomToggle = () => {
-      setIsLeftSidebarCollapsed(prev => !prev);
-      window.dispatchEvent(new Event('leaflet-invalidate-size'));
-    };
-
-    const handleToggleRight = () => {
-      setIsQueueCollapsed(prev => !prev);
-      window.dispatchEvent(new Event('leaflet-invalidate-size'));
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('toggle-left-sidebar', handleCustomToggle);
-    window.addEventListener('toggle-queue', handleToggleRight);
-    window.addEventListener('toggle-right-sidebar', handleToggleRight);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('toggle-left-sidebar', handleCustomToggle);
-      window.removeEventListener('toggle-queue', handleToggleRight);
-      window.removeEventListener('toggle-right-sidebar', handleToggleRight);
-    };
-  }, [resolveModalCluster, adminModalCluster, rightPaneView, currentTab, toggleTheme]);
-
-  // Update cluster status from nodal action
-  const handleUpdateClusterStatus = (
-    clusterId: string,
-    newStatus: TicketStatus,
-    actionNote: string,
-    actionType: AuditActionLog['action_type']
-  ) => {
-    let updatedTitle = '';
-    let oldStatus: TicketStatus = 'open';
-
-    setClusters(prev =>
-      prev.map(c => {
-        if (c.cluster_id === clusterId) {
-          updatedTitle = c.title;
-          oldStatus = c.status;
-          return {
-            ...c,
-            status: newStatus,
-            hours_remaining: newStatus === 'resolved' ? c.hours_remaining : Math.max(0.5, c.hours_remaining)
-          };
-        }
-        return c;
-      })
-    );
-
-    // Record immutable audit log entry
-    const newLog: AuditActionLog = {
-      id: `AUD-${Math.floor(8822 + Math.random() * 900)}`,
-      cluster_id: clusterId,
-      cluster_title: updatedTitle || clusterId,
-      action_type: actionType,
-      officer_id: 'OFF-MH-PMC-018',
-      officer_name: 'Smt. P. S. Jadhav (Nodal Officer)',
-      timestamp: 'Today, Just now',
-      details: actionNote,
-      status_before: oldStatus,
-      status_after: newStatus
-    };
-
-    setAuditLogs(prev => [newLog, ...prev]);
-  };
-
-  // Resolution and Formal Closure with verified AQI delta & evidence
-  const handleConfirmResolution = (
-    clusterId: string,
-    resolution: ResolutionRecord,
-    officerRemarks: string
-  ) => {
-    let targetTitle = '';
-    let previousStatus: TicketStatus = 'open';
-
-    setClusters(prev =>
-      prev.map(c => {
-        if (c.cluster_id === clusterId) {
-          targetTitle = c.title;
-          previousStatus = c.status;
-          return {
-            ...c,
-            status: 'resolved',
-            resolution: resolution,
-            avg_aqi: resolution.post_intervention_aqi,
-            priority_score: Math.max(10, Math.round(c.priority_score * 0.2)),
-            admin_action_label: 'Intervention Verified'
-          };
-        }
-        return c;
-      })
-    );
-
-    // Append to Audit Logs View
-    const resolutionLog: AuditActionLog = {
-      id: `AUD-${Math.floor(8830 + Math.random() * 900)}`,
-      cluster_id: clusterId,
-      cluster_title: targetTitle || clusterId,
-      action_type: 'MARK_RESOLVED',
-      officer_id: resolution.officer_id,
-      officer_name: 'Smt. P. S. Jadhav (Nodal Officer)',
-      timestamp: 'Today, Just now',
-      details: `Resolution verified: ${resolution.action_summary}. Ambient AQI: ${resolution.pre_intervention_aqi} -> ${resolution.post_intervention_aqi} (${resolution.aqi_delta} delta, ${resolution.pm10_delta_percent}% drop). Attribution: ${resolution.sensor_station_id}. Note: ${officerRemarks}`,
-      status_before: previousStatus,
-      status_after: 'resolved'
-    };
-
-    setAuditLogs(prev => [resolutionLog, ...prev]);
-  };
-
-  // Manual Officer Priority Override Handler
-  const handleUpdatePriorityOverride = (
-    clusterId: string,
-    overridePts: number,
-    reason: string
-  ) => {
-    let clusterTitle = '';
-    setClusters(prev =>
-      prev.map(c => {
-        if (c.cluster_id === clusterId) {
-          clusterTitle = c.title;
-          const baseScore = c.statutory_weights.complaint_spike + 
-                            c.statutory_weights.high_pollutant_source + 
-                            c.statutory_weights.sla_urgency + 
-                            c.statutory_weights.ambient_delta;
-          const adjustedScore = Math.min(100, Math.max(10, baseScore + overridePts));
-
-          return {
-            ...c,
-            priority_score: adjustedScore,
-            manual_override_pts: overridePts,
-            override_reason: reason
-          };
-        }
-        return c;
-      })
-    );
-
-    if (overridePts !== 0) {
-      const overrideLog: AuditActionLog = {
-        id: `AUD-OVR-${Math.floor(1000 + Math.random() * 9000)}`,
-        cluster_id: clusterId,
-        cluster_title: clusterTitle || clusterId,
-        action_type: 'ISSUE_STATUTORY_NOTICE',
-        officer_id: 'OFF-MH-PMC-018',
-        officer_name: 'Smt. P. S. Jadhav (Nodal Officer)',
-        timestamp: 'Today, Just now',
-        details: `Officer Manual Priority Override applied (${overridePts > 0 ? `+${overridePts}` : overridePts} pts). Statutory Ground Reason: ${reason}.`,
-        status_before: 'open',
-        status_after: 'open'
-      };
-      setAuditLogs(prev => [overrideLog, ...prev]);
-    }
-  };
-
-  const handleSelectCluster = (clusterId: string) => {
-    setSelectedClusterId(clusterId);
-  };
-
-  const handleOpenDetail = (clusterId: string) => {
-    setSelectedClusterId(clusterId);
-    setRightPaneView('detail');
-    setIsQueueCollapsed(false);
-    setMobileTriageView('queue');
-  };
-
-  const handleExecuteAdminAction = (
-    cluster: IncidentCluster,
-    prefill?: {
-      targetAgency?: string;
-      directive?: string;
-      legalProvision?: string;
-      rationale?: string;
-    }
-  ) => {
-    setAdminModalCluster(cluster);
-    setAdminModalPrefill(prefill);
+  const getPollutantStatus = (key: keyof PollutantValues, value: number) => {
+    const limit = pollutantMeta[key].whoLimit;
+    const ratio = value / limit;
+    if (ratio <= 1.0) return { label: 'Safe (WHO)', color: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800' };
+    if (ratio <= 3.0) return { label: `${ratio.toFixed(1)}x WHO`, color: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800' };
+    return { label: `${ratio.toFixed(1)}x WHO`, color: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800' };
   };
 
   return (
-    <div className="flex h-screen w-screen bg-slate-100 dark:bg-[#0C1015] text-slate-900 dark:text-[#F1F5F9] overflow-hidden font-sans select-none transition-colors">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
-      {/* 1. Left Sidebar: Resizable with Smooth Width Transitions & Snap-to-Collapse */}
-      <motion.aside
-        animate={{
-          width: isDesktop ? (isLeftSidebarCollapsed ? 0 : leftSidebarWidth) : undefined,
-        }}
-        transition={
-          isLeftDragging 
-            ? { duration: 0 } 
-            : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }
-        }
-        onAnimationComplete={() => {
-          window.dispatchEvent(new Event('leaflet-invalidate-size'));
-          window.dispatchEvent(new Event('resize'));
-        }}
-        className={`h-full relative shrink-0 overflow-hidden ${
-          isLeftSidebarCollapsed ? 'border-r-0 md:w-0' : 'border-r border-slate-200 dark:border-[#222E3C]'
-        } ${isMobileNavOpen ? 'fixed inset-0 z-50 w-72' : 'hidden md:flex'}`}
-      >
-        <div 
-          style={isDesktop ? { width: `${leftSidebarWidth}px`, minWidth: `${leftSidebarWidth}px` } : undefined}
-          className="h-full w-full flex flex-col overflow-hidden"
-        >
-          <Sidebar
-            activeTab={currentTab}
-            onTabChange={tab => {
-              setCurrentTab(tab);
-              if (tab === 'queue') {
-                setRightPaneView('queue');
-                setMobileTriageView('queue');
-                setIsQueueCollapsed(false);
-              } else if (tab === 'triage') {
-                setMobileTriageView('map');
-              }
-            }}
-            criticalCount={criticalCount}
-            openCount={openCount}
-            totalComplaints={totalComplaints}
-            resolvedCount={resolvedCount}
-            isMobileOpen={isMobileNavOpen}
-            onMobileClose={() => setIsMobileNavOpen(false)}
-            isCollapsed={isLeftSidebarCollapsed}
-            onToggleCollapse={() => {
-              setIsLeftSidebarCollapsed(true);
-              window.dispatchEvent(new Event('leaflet-invalidate-size'));
-            }}
-          />
+      {/* Saved Cities Quick Switcher Bar */}
+      {user.savedCityIds.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+          <span className="text-zinc-400 font-bold uppercase text-[10px] tracking-wider shrink-0 flex items-center gap-1">
+            <Bookmark className="w-3 h-3 text-sky-500" /> Favorites:
+          </span>
+          {user.savedCityIds.map((savedId) => {
+            const city = allCities.find((c) => c.id === savedId);
+            if (!city) return null;
+            const cBand = getAQIBandInfo(city.aqi, colorblindMode);
+            const isSelected = city.id === currentCity.id;
+            return (
+              <button
+                key={city.id}
+                onClick={() => selectCityById(city.id)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs transition-all shrink-0 ${
+                  isSelected
+                    ? 'bg-sky-50 border-sky-400 text-sky-900 dark:bg-sky-950/50 dark:border-sky-700 dark:text-sky-200 font-bold shadow-xs'
+                    : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <span>{city.name}</span>
+                <span
+                  className="px-1.5 py-0.2 rounded text-[10px] font-black text-white"
+                  style={{ backgroundColor: cBand.displayColor }}
+                >
+                  {city.aqi}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      </motion.aside>
+      )}
 
-      {/* Vertical Drag Handle Splitter for Left Sidebar */}
-      {!isLeftSidebarCollapsed && isDesktop && (
+      {/* Main Hero Section: Station Overview + Health Recommendations */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Left Column (7 Cols): Primary Air Quality Card */}
         <div
-          role="separator"
-          aria-orientation="vertical"
-          aria-label="Resize Left Sidebar"
-          title="Drag to resize navigation (180px - 380px), shrink <130px to collapse, or double-click to toggle"
-          onMouseDown={handleLeftDragStart}
-          onDoubleClick={() => {
-            setIsLeftSidebarCollapsed(true);
-            window.dispatchEvent(new Event('leaflet-invalidate-size'));
-          }}
-          className={`hidden md:flex items-center justify-center w-1.5 hover:w-2 cursor-col-resize hover:bg-emerald-500/80 active:bg-emerald-600 bg-slate-200/90 dark:bg-[#1A232F] transition-all z-20 shrink-0 select-none group ${
-            isLeftDragging ? 'bg-emerald-500 w-2' : ''
-          }`}
+          className="lg:col-span-7 bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex flex-col justify-between"
+          id="dashboard-hero-card"
         >
-          <div className="w-1 h-8 rounded-full bg-slate-400/80 dark:bg-[#2A3747] group-hover:bg-white group-hover:h-12 transition-all duration-200" />
-          {isLeftDragging && (
-            <div className="absolute top-6 left-2 bg-slate-900 dark:bg-[#131922] text-white text-[10px] font-mono px-2 py-0.5 rounded-md shadow-md pointer-events-none z-30 whitespace-nowrap border border-slate-700 dark:border-[#222E3C]">
-              {Math.round(leftSidebarWidth)}px {leftSidebarWidth < 140 ? '(Release to Collapse)' : ''}
+          {/* Subtle colored glow in corner */}
+          <div
+            className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none"
+            style={{ backgroundColor: bandInfo.displayColor }}
+          />
+
+          <div>
+            {/* Header: Location & Station Meta */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                    Live CAAQMS Station
+                  </span>
+                  <span className="text-xs text-zinc-400">•</span>
+                  <span className="text-xs text-zinc-500">{currentCity.lastUpdated}</span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white mt-1">
+                  {currentCity.name}, <span className="text-zinc-500 dark:text-zinc-400 font-medium">{currentCity.state}</span>
+                </h1>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  {currentCity.stationName} • <span className="text-sky-600 dark:text-sky-400 font-semibold">{currentCity.validationSource}</span>
+                </p>
+              </div>
+
+              {/* Bookmark Save Action */}
+              <button
+                onClick={() => toggleSaveCity(currentCity.id)}
+                className={`p-2.5 rounded-xl border transition-all ${
+                  isSaved
+                    ? 'bg-sky-100 dark:bg-sky-950/60 border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 shadow-xs'
+                    : 'bg-zinc-50 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
+                }`}
+                title={isSaved ? 'Remove from Saved Cities' : 'Save City to Favorites'}
+                id="save-city-toggle-btn"
+              >
+                {isSaved ? <BookmarkCheck className="w-5 h-5 text-sky-600 dark:text-sky-400" /> : <Bookmark className="w-5 h-5" />}
+              </button>
             </div>
-          )}
+
+            {/* Giant AQI Number & Qualitative Category */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-5 my-5 p-4 rounded-xl bg-zinc-50/80 dark:bg-zinc-950/50 border border-zinc-200/70 dark:border-zinc-800/70">
+              <div
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex flex-col items-center justify-center text-white shadow-md font-black shrink-0"
+                style={{ backgroundColor: bandInfo.displayColor }}
+              >
+                <span className="text-3xl sm:text-4xl leading-none font-mono">{currentCity.aqi}</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider mt-1 opacity-90">AQI</span>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className="px-2.5 py-0.5 rounded-md text-xs sm:text-sm font-black uppercase tracking-wide text-white"
+                    style={{ backgroundColor: bandInfo.displayColor }}
+                  >
+                    {bandInfo.label}
+                  </span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                    National Air Quality Index
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-2 font-medium leading-relaxed">
+                  {bandInfo.actionSummary}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Metrics Bar: Dominant Pollutant + National Rank + Inversion Risk */}
+          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-xs">
+            <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+              <span className="text-zinc-400 text-[10px] uppercase font-bold">Main Pollutant</span>
+              <div className="font-bold text-zinc-900 dark:text-zinc-100 mt-0.5 truncate">
+                {currentCity.dominantPollutant.toUpperCase()} ({currentCity.pollutants[currentCity.dominantPollutant]} µg/m³)
+              </div>
+            </div>
+            <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+              <span className="text-zinc-400 text-[10px] uppercase font-bold">National Rank</span>
+              <div className="font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                #{currentCity.rankingGlobal} in India
+              </div>
+            </div>
+            <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-700/60">
+              <span className="text-zinc-400 text-[10px] uppercase font-bold">Inversion Trapping</span>
+              <div className={`font-bold mt-0.5 ${
+                currentCity.inversionRisk === 'Severe' ? 'text-rose-600 dark:text-rose-400' :
+                currentCity.inversionRisk === 'High' ? 'text-amber-600 dark:text-amber-400' :
+                'text-emerald-600 dark:text-emerald-400'
+              }`}>
+                {currentCity.inversionRisk} Risk
+              </div>
+            </div>
+          </div>
+
         </div>
-      )}
 
-      {/* Fullscreen transparent drag overlay to prevent hover thrashing or pointer loss */}
-      {(isDragging || isLeftDragging) && (
-        <div className="fixed inset-0 z-50 cursor-col-resize select-none pointer-events-auto bg-transparent" />
-      )}
-
-      {/* Pinned Left Edge Expand Tab: ALWAYS visible on screen edge when left sidebar is collapsed */}
-      {isLeftSidebarCollapsed && (
-        <button
-          type="button"
-          onClick={() => {
-            setIsLeftSidebarCollapsed(false);
-            window.dispatchEvent(new Event('leaflet-invalidate-size'));
-          }}
-          aria-label="Expand Navigation Sidebar"
-          title="Expand Navigation Sidebar (⌘\ or [)"
-          className="fixed top-1/3 -translate-y-1/2 left-0 z-50 w-8 h-20 bg-white/95 dark:bg-[#131922] border border-l-0 border-slate-300 dark:border-[#222E3C] rounded-r-xl shadow-2xl flex flex-col items-center justify-center text-slate-700 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-slate-50 dark:hover:bg-[#1A232F] hover:w-10 transition-all cursor-pointer select-none group"
+        {/* Right Column (5 Cols): Smart Health Advisory Card */}
+        <div
+          className="lg:col-span-5 bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between"
+          id="dashboard-health-advisory-card"
         >
-          <PanelLeftOpen className="w-4 h-4 mb-1 group-hover:scale-110 transition-transform" />
-          <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-        </button>
-      )}
-
-      {/* Pinned Right Edge Expand Tab: ALWAYS visible on right screen edge when right sidebar is collapsed */}
-      {isQueueCollapsed && isDesktop && currentTab === 'triage' && (
-        <button
-          type="button"
-          onClick={() => {
-            setIsQueueCollapsed(false);
-            window.dispatchEvent(new Event('leaflet-invalidate-size'));
-          }}
-          aria-label="Expand Priority Queue"
-          title="Expand Priority Queue (⌘B or ])"
-          className="fixed top-1/3 -translate-y-1/2 right-0 z-50 w-8 h-20 bg-white/95 dark:bg-[#131922] border border-r-0 border-slate-300 dark:border-[#222E3C] rounded-l-xl shadow-2xl flex flex-col items-center justify-center text-slate-700 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-slate-50 dark:hover:bg-[#1A232F] hover:w-10 transition-all cursor-pointer select-none group"
-        >
-          <PanelRightOpen className="w-4 h-4 mb-1 group-hover:scale-110 transition-transform" />
-          <ChevronLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-        </button>
-      )}
-
-      {/* Global Floating Reopen Button for Left Sidebar */}
-      <AnimatePresence>
-        {isLeftSidebarCollapsed && (
-          <motion.button
-            key="reopen-left-button"
-            initial={{ opacity: 0, x: -20, scale: 0.94 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -20, scale: 0.94 }}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-            type="button"
-            onClick={() => {
-              setIsLeftSidebarCollapsed(false);
-              window.dispatchEvent(new Event('leaflet-invalidate-size'));
-            }}
-            className="fixed top-3 left-3 z-50 flex items-center gap-2 px-3.5 py-2 bg-white/95 dark:bg-[#131922]/95 backdrop-blur-md border border-slate-300 dark:border-[#222E3C] shadow-xl hover:shadow-2xl rounded-lg text-xs font-semibold text-slate-900 dark:text-[#F1F5F9] hover:border-emerald-500/60 dark:hover:border-emerald-500/60 transition-all cursor-pointer group select-none"
-            title="Expand Navigation Sidebar ([ or ⌘\)"
-          >
-            <PanelLeftOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span className="font-sans">Navigation</span>
-            <kbd className="hidden lg:inline text-[9px] text-slate-500 dark:text-[#94A3B8] font-mono bg-slate-100 dark:bg-[#0C1015] px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#222E3C]">
-              ⌘\
-            </kbd>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Main Command Workspace */}
-      <main className="flex-1 h-full flex flex-col overflow-hidden relative">
-        {/* Mobile Header Bar */}
-        <header className="md:hidden bg-white dark:bg-[#131922] border-b border-slate-200 dark:border-[#222E3C] px-3.5 py-2.5 flex items-center justify-between shrink-0 z-30 transition-colors">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsMobileNavOpen(true)}
-              aria-label="Open navigation menu"
-              className="min-h-[44px] min-w-[44px] -ml-2 text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white rounded-md hover:bg-slate-100 dark:hover:bg-[#1A232F] flex items-center justify-center transition-colors cursor-pointer"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-sm text-slate-900 dark:text-white">AirSense</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 rounded font-medium">
-                B2G
+          <div>
+            {/* Header with Risk Tier */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                <h2 className="font-bold text-base text-zinc-900 dark:text-zinc-100">
+                  Health Advisory
+                </h2>
+              </div>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-black uppercase ${
+                healthRecs.riskTier === 'Critical' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' :
+                healthRecs.riskTier === 'High' ? 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300' :
+                healthRecs.riskTier === 'Elevated' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+              }`}>
+                {healthRecs.riskTier} Risk
               </span>
             </div>
-          </div>
-          <div className="flex items-center gap-2 font-mono text-[11px] text-slate-500 dark:text-[#94A3B8]">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-1 rounded-md text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#1A232F] transition-colors"
-              title="Toggle Dark Mode"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
-            </button>
-            <span>PMC Pune</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" title="CPCB Feed Live"></span>
-          </div>
-        </header>
 
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={currentTab}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="flex-1 h-full w-full overflow-hidden flex flex-col"
-            onAnimationComplete={() => {
-              if (currentTab === 'triage') {
-                window.dispatchEvent(new Event('leaflet-invalidate-size'));
-                window.dispatchEvent(new Event('resize'));
-              }
-            }}
+            {/* Health Profile Pill Indicator */}
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/60 p-2 rounded-lg mb-3.5 flex items-center justify-between">
+              <span>
+                Target: <strong className="text-zinc-800 dark:text-zinc-200 capitalize">{user.healthProfile.ageGroup}</strong>
+                {user.healthProfile.hasAsthmaOrCOPD && <span className="text-rose-600 dark:text-rose-400 font-bold"> • Asthmatic</span>}
+              </span>
+              <button
+                onClick={() => setActiveTab('simulator')}
+                className="text-sky-600 dark:text-sky-400 hover:underline font-bold"
+              >
+                Configure
+              </button>
+            </div>
+
+            {/* 3 Actionable Health Chips */}
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60">
+                <Shield className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Mask Guidance</div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5">{healthRecs.maskRecommendation}</div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60">
+                <Home className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Indoor Ventilation</div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5">{healthRecs.windowVentilationAdvice}</div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-700/60">
+                <Activity className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Outdoor Exercise</div>
+                  <div className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5">{healthRecs.outdoorExerciseAdvice}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Simulation Link */}
+          <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+            <button
+              onClick={() => setActiveTab('simulator')}
+              className="w-full py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
+              id="open-full-simulator-btn"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Simulate Smog Interventions</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Atmospheric & Meteorology Bar (7 Clean Metric Pills) */}
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Thermometer className="w-4 h-4 text-amber-500" />
+            <h2 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+              Atmospheric & Meteorological Conditions
+            </h2>
+          </div>
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            Current: <strong className="text-zinc-800 dark:text-zinc-200">{currentCity.weather.condition}</strong>
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
+            <div className="text-[10px] text-zinc-500 uppercase font-semibold">Temperature</div>
+            <div className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5">{currentCity.weather.temperature}°C</div>
+            <div className="text-[10px] text-zinc-400">Feels {currentCity.weather.feelsLike}°C</div>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
+            <div className="text-[10px] text-zinc-500 uppercase font-semibold">Humidity</div>
+            <div className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5">{currentCity.weather.humidity}%</div>
+            <div className="text-[10px] text-zinc-400">Dew {currentCity.weather.dewPoint}°C</div>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
+            <div className="text-[10px] text-zinc-500 uppercase font-semibold">Wind Vector</div>
+            <div className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5">{currentCity.weather.windSpeed} <span className="text-[10px] font-normal">km/h</span></div>
+            <div className="text-[10px] text-zinc-400">{currentCity.weather.windDirection} ({currentCity.weather.windDegree}°)</div>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
+            <div className="text-[10px] text-zinc-500 uppercase font-semibold">Pressure</div>
+            <div className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5">{currentCity.weather.pressure} <span className="text-[10px] font-normal">hPa</span></div>
+            <div className="text-[10px] text-zinc-400">Barometer</div>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
+            <div className="text-[10px] text-zinc-500 uppercase font-semibold">UV Index</div>
+            <div className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5">{currentCity.weather.uvIndex} <span className="text-[10px] font-normal">/ 12</span></div>
+            <div className="text-[10px] text-zinc-400">{currentCity.weather.uvIndex > 7 ? 'Very High' : 'Moderate'}</div>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center">
+            <div className="text-[10px] text-zinc-500 uppercase font-semibold">Visibility</div>
+            <div className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5">{currentCity.weather.visibility} <span className="text-[10px] font-normal">km</span></div>
+            <div className="text-[10px] text-zinc-400">{currentCity.weather.visibility < 3 ? 'Smog Veil' : 'Clear Sight'}</div>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-700/60 text-center col-span-2 sm:col-span-4 lg:col-span-1">
+            <div className="text-[10px] text-zinc-500 uppercase font-semibold">Dispersion</div>
+            <div className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mt-0.5">
+              {currentCity.weather.windSpeed < 8 ? 'Stagnant' : 'Active'}
+            </div>
+            <div className="text-[10px] text-zinc-400">Boundary Layer</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 6-Card Pollutant Breakdown Matrix */}
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="font-bold text-base text-zinc-900 dark:text-zinc-100">
+              Continuous Pollutant Readouts
+            </h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Live CPCB sensor measurements compared to WHO 24-hour safe limits.
+            </p>
+          </div>
+          <button
+            onClick={() => setActiveTab('city-detail')}
+            className="text-xs font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 hover:underline shrink-0"
           >
-            {currentTab === 'impact_log' ? (
-              <ErrorBoundary fallbackTitle="Impact Log View Error">
-                <div className="flex-1 h-full overflow-hidden">
-                  <ImpactLogView
-                    clusters={clusters}
-                    onBackToTriage={() => setCurrentTab('triage')}
-                    onInspectCluster={handleOpenDetail}
-                    onToggleSidebar={() => setIsLeftSidebarCollapsed(prev => !prev)}
-                    isSidebarCollapsed={isLeftSidebarCollapsed}
-                  />
-                </div>
-              </ErrorBoundary>
-            ) : currentTab === 'queue' ? (
-              /* Mode 2: Priority Queue (Full-width scannable triage view) */
-              <ErrorBoundary fallbackTitle="Priority Queue View Error">
-                <div className="flex-1 h-full overflow-hidden flex bg-slate-50 dark:bg-[#0C1015] relative transition-colors">
-                  <div className="flex-1 h-full overflow-hidden flex justify-center">
-                    {rightPaneView === 'detail' && selectedCluster ? (
-                      <div className="w-full max-w-4xl h-full bg-white dark:bg-[#131922] border-x border-slate-200 dark:border-[#222E3C] overflow-hidden shadow-xs">
-                        <ClusterDetail
-                          cluster={selectedCluster}
-                          onBack={() => setRightPaneView('queue')}
-                          onUpdateStatus={handleUpdateClusterStatus}
-                          onOpenAdminModal={handleExecuteAdminAction}
-                          onOpenResolveModal={cluster => setResolveModalCluster(cluster)}
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full max-w-5xl h-full bg-white dark:bg-[#131922] border-x border-slate-200 dark:border-[#222E3C] overflow-hidden shadow-xs flex flex-col">
-                        <PriorityQueue
-                          clusters={clusters}
-                          selectedClusterId={selectedClusterId}
-                          onSelectCluster={handleSelectCluster}
-                          onOpenDetail={handleOpenDetail}
-                          onExecuteAdminAction={handleExecuteAdminAction}
-                          onOpenResolveModal={cluster => setResolveModalCluster(cluster)}
-                          onUpdatePriorityOverride={handleUpdatePriorityOverride}
-                          filterCategory={filterCategory}
-                          onFilterCategoryChange={setFilterCategory}
-                          searchQuery={searchQuery}
-                          onSearchChange={setSearchQuery}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </ErrorBoundary>
-            ) : currentTab === 'audit_logs' ? (
-              <ErrorBoundary fallbackTitle="Audit Logs View Error">
-                <div className="flex-1 h-full overflow-hidden">
-                  <AuditLogsView
-                    logs={auditLogs}
-                    onBackToTriage={() => setCurrentTab('triage')}
-                    onToggleSidebar={() => setIsLeftSidebarCollapsed(prev => !prev)}
-                    isSidebarCollapsed={isLeftSidebarCollapsed}
-                  />
-                </div>
-              </ErrorBoundary>
-            ) : currentTab === 'system_health' ? (
-              <ErrorBoundary fallbackTitle="System Health View Error">
-                <div className="flex-1 h-full overflow-hidden">
-                  <SystemHealthView
-                    onBackToTriage={() => setCurrentTab('triage')}
-                    clusterCount={clusters.length}
-                    criticalCount={criticalCount}
-                    onToggleSidebar={() => setIsLeftSidebarCollapsed(prev => !prev)}
-                    isSidebarCollapsed={isLeftSidebarCollapsed}
-                  />
-                </div>
-              </ErrorBoundary>
-            ) : currentTab === 'settings' ? (
-              <ErrorBoundary fallbackTitle="Settings View Error">
-                <div className="flex-1 h-full overflow-hidden">
-                  <SettingsView
-                    onBackToTriage={() => setCurrentTab('triage')}
-                    onToggleSidebar={() => setIsLeftSidebarCollapsed(prev => !prev)}
-                    isSidebarCollapsed={isLeftSidebarCollapsed}
-                    onStartTour={handleStartTour}
-                  />
-                </div>
-              </ErrorBoundary>
-            ) : (
-              /* Executive Triage Command Workspace */
-              <ErrorBoundary fallbackTitle="Live Triage & Map Error">
-                <div className="flex-1 h-full flex flex-col overflow-hidden relative">
-                  {/* Mobile View Switcher Tab Bar (< md) */}
-                  <div className="md:hidden sticky top-0 z-30 bg-white dark:bg-[#131922] border-b border-slate-200 dark:border-[#222E3C] px-3 py-2 flex items-center justify-center shrink-0 shadow-xs transition-colors">
-                    <div className="flex bg-slate-100 dark:bg-[#0C1015] p-1 rounded border border-slate-200 dark:border-[#222E3C] w-full max-w-sm">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileTriageView('map');
-                          setTimeout(() => {
-                            window.dispatchEvent(new Event('leaflet-invalidate-size'));
-                            window.dispatchEvent(new Event('resize'));
-                          }, 200);
-                        }}
-                        className={`flex-1 min-h-[40px] py-1.5 px-3 text-xs font-medium rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation select-none ${
-                          mobileTriageView === 'map'
-                            ? 'bg-white dark:bg-[#1A232F] text-emerald-950 dark:text-emerald-300 shadow-xs border border-slate-200 dark:border-[#222E3C] font-semibold'
-                            : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'
-                        }`}
-                      >
-                        <Radio className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span>Interactive Map</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setMobileTriageView('queue')}
-                        className={`flex-1 min-h-[40px] py-1.5 px-3 text-xs font-medium rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation select-none ${
-                          mobileTriageView === 'queue'
-                            ? 'bg-white dark:bg-[#1A232F] text-emerald-950 dark:text-emerald-300 shadow-xs border border-slate-200 dark:border-[#222E3C] font-semibold'
-                            : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'
-                        }`}
-                      >
-                        <ListOrdered className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span>Priority Queue ({clusters.length})</span>
-                      </button>
+            <span>72-Hour Forecasts</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {(Object.keys(pollutantMeta) as (keyof PollutantValues)[]).map((key) => {
+            const meta = pollutantMeta[key];
+            const value = currentCity.pollutants[key];
+            const status = getPollutantStatus(key, value);
+            const isDominant = currentCity.dominantPollutant === key;
+
+            return (
+              <div
+                key={key}
+                className={`p-4 rounded-xl border transition-all ${
+                  isDominant
+                    ? 'bg-sky-50/40 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800 shadow-xs'
+                    : 'bg-zinc-50/80 dark:bg-zinc-800/40 border-zinc-200/70 dark:border-zinc-700/60'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                        {meta.name}
+                      </span>
+                      {isDominant && (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-sky-600 text-white uppercase">
+                          Primary
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xl font-black text-zinc-900 dark:text-white mt-1">
+                      {value}{' '}
+                      <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">
+                        {meta.unit}
+                      </span>
                     </div>
                   </div>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${status.color}`}>
+                    {status.label}
+                  </span>
+                </div>
 
-                  {/* Responsive 2-Pane Container with exactly ONE InteractiveMap instance */}
-                  <div 
-                    ref={triageContainerRef}
-                    className={`flex-1 h-full flex overflow-hidden relative ${isDragging ? 'select-none' : ''}`}
-                  >
-                    {/* 1. Geospatial Interactive Map */}
-                    <section 
-                      className={`h-full relative overflow-hidden bg-slate-100 dark:bg-[#0C1015] flex-1 ${
-                        mobileTriageView === 'map' ? 'flex w-full' : 'hidden md:flex'
+                {/* Progress Bar vs WHO Limit */}
+                <div className="mt-2.5">
+                  <div className="flex justify-between text-[10px] text-zinc-400 font-medium mb-1">
+                    <span>Limit: {meta.whoLimit} {meta.unit}</span>
+                    <span>{((value / meta.whoLimit) * 100).toFixed(0)}%</span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        value > meta.whoLimit * 3
+                          ? 'bg-rose-500'
+                          : value > meta.whoLimit
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
                       }`}
-                    >
-                      <InteractiveMap
-                        clusters={clusters}
-                        selectedClusterId={selectedClusterId}
-                        onSelectCluster={handleOpenDetail}
-                        onInspectCluster={handleOpenDetail}
-                        isQueueCollapsed={isQueueCollapsed}
-                        isLeftSidebarCollapsed={isLeftSidebarCollapsed}
-                        onToggleSidebar={() => {
-                          setIsLeftSidebarCollapsed(false);
-                          window.dispatchEvent(new Event('leaflet-invalidate-size'));
-                        }}
-                        onToggleQueue={() => {
-                          setIsQueueCollapsed(false);
-                          window.dispatchEvent(new Event('leaflet-invalidate-size'));
-                        }}
-                        criticalCount={criticalCount}
-                      />
-                    </section>
-
-                    {/* Vertical drag handle splitter between map and right queue pane */}
-                    {!isQueueCollapsed && isDesktop && (
-                      <div
-                        role="separator"
-                        aria-orientation="vertical"
-                        aria-label="Resize Triage Sidebar"
-                        title="Drag to resize triage sidebar (300px - 650px), shrink <220px to collapse"
-                        onMouseDown={handleDragStart}
-                        onDoubleClick={() => {
-                          setIsQueueCollapsed(true);
-                          window.dispatchEvent(new Event('leaflet-invalidate-size'));
-                        }}
-                        className={`hidden md:flex items-center justify-center w-1.5 hover:w-2 -mr-0.5 cursor-col-resize hover:bg-emerald-500/80 active:bg-emerald-600 bg-slate-200/90 dark:bg-[#1A232F] transition-all z-20 shrink-0 select-none group ${
-                          isDragging ? 'bg-emerald-500 w-2' : ''
-                        }`}
-                      >
-                        <div className="w-1 h-8 rounded-full bg-slate-400/80 dark:bg-[#2A3747] group-hover:bg-white group-hover:h-12 transition-all duration-200" />
-                        {isDragging && (
-                          <div className="absolute top-6 -left-12 bg-slate-900 dark:bg-[#131922] text-white text-[10px] font-mono px-2 py-0.5 rounded-md shadow-md pointer-events-none z-30 whitespace-nowrap border border-slate-700 dark:border-[#222E3C]">
-                            {Math.round(sidebarWidth)}px
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* 2 & 3. Right Pane: Smooth Width Transitions */}
-                    <motion.aside 
-                      animate={{
-                        width: isDesktop ? (isQueueCollapsed ? 0 : sidebarWidth) : '100%',
-                      }}
-                      transition={
-                        isDragging 
-                          ? { duration: 0 } 
-                          : { duration: 0.28, ease: [0.22, 1, 0.36, 1] }
-                      }
-                      onAnimationComplete={() => {
-                        window.dispatchEvent(new Event('leaflet-invalidate-size'));
-                        window.dispatchEvent(new Event('resize'));
-                      }}
-                      className={`h-full relative flex-col bg-white/95 dark:bg-[#131922]/95 backdrop-blur-xl shrink-0 overflow-hidden ${
-                        isQueueCollapsed ? 'border-l-0 md:w-0' : 'border-l border-slate-200/90 dark:border-[#222E3C]'
-                      } ${mobileTriageView === 'queue' ? 'flex w-full' : 'hidden'} ${
-                        isQueueCollapsed ? 'md:flex md:w-0' : 'md:flex'
-                      }`}
-                    >
-                      {/* Edge Collapse Toggle Pill Button on left boundary of right pane (visible when open) */}
-                      {!isQueueCollapsed && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsQueueCollapsed(true);
-                            window.dispatchEvent(new Event('leaflet-invalidate-size'));
-                          }}
-                          aria-label="Collapse Priority Queue"
-                          title="Collapse Priority Queue (⌘B or ])"
-                          className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-2.5 z-30 w-5 h-12 bg-white/95 dark:bg-[#131922]/95 backdrop-blur-xs border border-slate-300/80 dark:border-[#222E3C] shadow-xs hover:shadow-md items-center justify-center text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#1A232F] rounded-md transition-all cursor-pointer select-none group"
-                        >
-                          <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                        </button>
-                      )}
-
-                      {/* Fixed-width inner wrapper ensures content doesn't squeeze during spring width transition */}
-                      <div 
-                        style={isDesktop ? { width: `${sidebarWidth}px`, minWidth: `${sidebarWidth}px` } : undefined}
-                        className="w-full h-full flex flex-col overflow-hidden"
-                      >
-                        <AnimatePresence mode="wait">
-                          {rightPaneView === 'detail' && selectedCluster ? (
-                            <motion.div
-                              key={`detail-${selectedCluster.cluster_id}`}
-                              initial={{ opacity: 0, x: 18 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: 18 }}
-                              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                              className="w-full h-full flex flex-col overflow-hidden"
-                            >
-                              <ClusterDetail
-                                cluster={selectedCluster}
-                                onBack={() => setRightPaneView('queue')}
-                                onUpdateStatus={handleUpdateClusterStatus}
-                                onOpenAdminModal={handleExecuteAdminAction}
-                                onOpenResolveModal={cluster => setResolveModalCluster(cluster)}
-                              />
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              key="queue-view"
-                              initial={{ opacity: 0, x: -18 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: -18 }}
-                              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                              className="w-full h-full flex flex-col overflow-hidden"
-                            >
-                              <PriorityQueue
-                                clusters={clusters}
-                                selectedClusterId={selectedClusterId}
-                                onSelectCluster={handleSelectCluster}
-                                onOpenDetail={handleOpenDetail}
-                                onExecuteAdminAction={handleExecuteAdminAction}
-                                onOpenResolveModal={cluster => setResolveModalCluster(cluster)}
-                                onUpdatePriorityOverride={handleUpdatePriorityOverride}
-                                onToggleCollapse={() => {
-                                  setIsQueueCollapsed(true);
-                                  window.dispatchEvent(new Event('leaflet-invalidate-size'));
-                                }}
-                                filterCategory={filterCategory}
-                                onFilterCategoryChange={setFilterCategory}
-                                searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
-                              />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </motion.aside>
+                      style={{ width: `${Math.min(100, (value / (meta.whoLimit * 4)) * 100)}%` }}
+                    />
                   </div>
                 </div>
-              </ErrorBoundary>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </main>
 
-      {/* Administrative Directive Modal */}
-      {adminModalCluster && (
-        <AdminActionModal
-          cluster={adminModalCluster}
-          prefill={adminModalPrefill}
-          onClose={() => {
-            setAdminModalCluster(null);
-            setAdminModalPrefill(undefined);
-          }}
-          onConfirmAction={handleUpdateClusterStatus}
-        />
-      )}
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-2">
+                  Impact: {meta.impact}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      {/* Formal Resolution & Impact Modal */}
-      {resolveModalCluster && (
-        <ResolveIncidentModal
-          cluster={resolveModalCluster}
-          onClose={() => setResolveModalCluster(null)}
-          onConfirmResolution={handleConfirmResolution}
-        />
-      )}
+      {/* Live Rankings Comparison Side-by-Side Panel */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Top 5 Most Polluted */}
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Flame className="w-4 h-4 text-rose-500" />
+            <h2 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+              Live Rankings: Most Polluted Monitored Cities
+            </h2>
+          </div>
+          <div className="space-y-1.5">
+            {mostPolluted.map((city, idx) => {
+              const band = getAQIBandInfo(city.aqi, colorblindMode);
+              const isSelected = city.id === currentCity.id;
+              return (
+                <button
+                  key={city.id}
+                  onClick={() => selectCityById(city.id)}
+                  className={`w-full p-2.5 rounded-xl border flex items-center justify-between transition-all ${
+                    isSelected
+                      ? 'bg-rose-50/60 dark:bg-rose-950/30 border-rose-300 dark:border-rose-800 font-bold'
+                      : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <span className="w-4 text-xs font-extrabold text-zinc-400">{idx + 1}.</span>
+                    <div>
+                      <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                        {city.name}, <span className="text-zinc-500 font-normal">{city.state}</span>
+                      </div>
+                      <div className="text-[10px] text-zinc-400">
+                        Primary: {city.dominantPollutant.toUpperCase()} ({city.pollutants[city.dominantPollutant]} µg/m³)
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    className="px-2 py-0.5 rounded text-xs font-black text-white"
+                    style={{ backgroundColor: band.displayColor }}
+                  >
+                    {city.aqi} AQI
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      {/* Interactive Guided Officer Workflow Tour */}
-      <OfficerWalkthrough
-        isOpen={isTourOpen}
-        onClose={() => {
-          setIsTourOpen(false);
-          setResolveModalCluster(null);
-          setAdminModalCluster(null);
-        }}
-        onNavigateToStep={handleTourStepChange}
-      />
+        {/* Top 5 Cleanest */}
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <h2 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+              Live Rankings: Cleanest Monitored Cities
+            </h2>
+          </div>
+          <div className="space-y-1.5">
+            {cleanestCities.map((city, idx) => {
+              const band = getAQIBandInfo(city.aqi, colorblindMode);
+              const isSelected = city.id === currentCity.id;
+              return (
+                <button
+                  key={city.id}
+                  onClick={() => selectCityById(city.id)}
+                  className={`w-full p-2.5 rounded-xl border flex items-center justify-between transition-all ${
+                    isSelected
+                      ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 font-bold'
+                      : 'bg-zinc-50 dark:bg-zinc-800/40 border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <span className="w-4 text-xs font-extrabold text-zinc-400">{idx + 1}.</span>
+                    <div>
+                      <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                        {city.name}, <span className="text-zinc-500 font-normal">{city.state}</span>
+                      </div>
+                      <div className="text-[10px] text-zinc-400">
+                        Coastal / Himalayan mountain airflow
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    className="px-2 py-0.5 rounded text-xs font-black text-white"
+                    style={{ backgroundColor: band.displayColor }}
+                  >
+                    {city.aqi} AQI
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+
     </div>
   );
 };
-
-export default Dashboard;

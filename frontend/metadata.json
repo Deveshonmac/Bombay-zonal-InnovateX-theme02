@@ -1,0 +1,6 @@
+{
+  "name": "AirSense - CPCB SAMEER Triage Dashboard",
+  "description": "B2G operational decision-support triage dashboard for municipal nodal officers responding to CPCB SAMEER citizen pollution complaints within a strict 24-hour SLA window.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
