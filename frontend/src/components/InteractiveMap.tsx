@@ -129,23 +129,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       labelsTileLayerRef.current = null;
     }
 
-    if (mapStyle === 'osm') {
-      // OpenStreetMap Standard Tiles (No API key, free, open-source)
+    if (mapStyle === 'osm' || theme === 'dark') {
+      // OSM for dark mode (CSS filter in index.css handles the dark inversion)
+      // and for explicit OSM style toggle
       baseTileLayerRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         subdomains: ['a', 'b', 'c'],
-        maxZoom: 18,
+        maxZoom: 19,
       }).addTo(map);
-    } else if (theme === 'dark') {
-      // CartoDB Dark Matter — full zoom coverage, no API key, includes labels
-      baseTileLayerRef.current = L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-        {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: 'abcd',
-          maxZoom: 19,
-        }
-      ).addTo(map);
     } else {
       // Esri Light Gray Base + Labels for light mode
       baseTileLayerRef.current = L.tileLayer(

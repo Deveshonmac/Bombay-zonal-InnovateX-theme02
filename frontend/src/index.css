@@ -90,6 +90,11 @@ body.dark {
   background: #151210 !important;
 }
 
+/* Dark mode map: invert OSM tiles to a dark look without any CDN dependency */
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.82) contrast(0.88) saturate(0.7);
+}
+
 /* Map Zoom Controls */
 .leaflet-bar {
   border: 1px solid #D4C5B0 !important;
