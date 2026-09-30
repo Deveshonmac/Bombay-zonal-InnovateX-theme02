@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'motion/react';
 import { AuditActionLog } from '../types';
 import { ShieldCheck, Clock, User, ArrowRight, PanelLeftOpen } from 'lucide-react';
@@ -17,15 +17,15 @@ export const AuditLogsView: React.FC<AuditLogsViewProps> = ({
   isSidebarCollapsed
 }) => {
   return (
-    <div className="w-full h-full bg-slate-50 dark:bg-[#0C1015] text-slate-900 dark:text-[#F1F5F9] flex flex-col overflow-y-auto p-4 sm:p-6 transition-colors">
+    <div className="w-full h-full bg-slate-50 dark:bg-[#150F0A] text-slate-900 dark:text-[#F1F5F9] flex flex-col overflow-y-auto p-4 sm:p-6 transition-colors">
       {/* View Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-[#222E3C] bg-transparent">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-[#2E2218] bg-transparent">
         <div className="flex items-center gap-3">
           {isSidebarCollapsed && onToggleSidebar && (
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="p-1.5 rounded-md bg-white dark:bg-[#131922] text-slate-700 dark:text-emerald-400 border border-slate-200 dark:border-[#222E3C] hover:bg-slate-100 dark:hover:bg-[#1A232F] transition-colors cursor-pointer"
+              className="p-1.5 rounded-md bg-white dark:bg-[#1E1810] text-slate-700 dark:text-emerald-400 border border-slate-200 dark:border-[#2E2218] hover:bg-slate-100 dark:hover:bg-[#261C12] transition-colors cursor-pointer"
               title="Expand Navigation (⌘\ or [)"
             >
               <PanelLeftOpen className="w-4 h-4" />
@@ -47,7 +47,7 @@ export const AuditLogsView: React.FC<AuditLogsViewProps> = ({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           onClick={onBackToTriage}
-          className="px-3 py-1.5 rounded-md bg-white dark:bg-[#131922] hover:bg-slate-100 dark:hover:bg-[#1A232F] border border-slate-200 dark:border-[#222E3C] text-xs font-medium text-slate-700 dark:text-[#F1F5F9] transition-colors shadow-2xs cursor-pointer"
+          className="px-3 py-1.5 rounded-md bg-white dark:bg-[#1E1810] hover:bg-slate-100 dark:hover:bg-[#261C12] border border-slate-200 dark:border-[#2E2218] text-xs font-medium text-slate-700 dark:text-[#F1F5F9] transition-colors shadow-2xs cursor-pointer"
         >
           Return to Live Triage Map
         </motion.button>
@@ -62,11 +62,11 @@ export const AuditLogsView: React.FC<AuditLogsViewProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.22, delay: Math.min(index * 0.035, 0.2), ease: 'easeOut' }}
             whileHover={{ y: -1 }}
-            className="p-4 bg-white dark:bg-[#131922] rounded-lg border border-slate-200 dark:border-[#222E3C] space-y-2 text-xs shadow-2xs hover:border-slate-300 dark:hover:border-emerald-500/50 hover:shadow-xs transition-all"
+            className="p-4 bg-white dark:bg-[#1E1810] rounded-lg border border-slate-200 dark:border-[#2E2218] space-y-2 text-xs shadow-2xs hover:border-slate-300 dark:hover:border-emerald-500/50 hover:shadow-xs transition-all"
           >
             <div className="flex items-center justify-between font-mono text-[11px]">
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#0C1015] text-slate-700 dark:text-[#949EA8] border border-slate-200 dark:border-[#222E3C] font-bold">
+                <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#150F0A] text-slate-700 dark:text-[#949EA8] border border-slate-200 dark:border-[#2E2218] font-bold">
                   {log.id}
                 </span>
                 <span className="text-slate-900 dark:text-[#F1F5F9] font-semibold">{log.cluster_title}</span>
@@ -81,7 +81,7 @@ export const AuditLogsView: React.FC<AuditLogsViewProps> = ({
               {log.details}
             </p>
 
-            <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-100 dark:border-[#222E3C] font-mono text-[11px] text-slate-500 dark:text-[#949EA8]">
+            <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-100 dark:border-[#2E2218] font-mono text-[11px] text-slate-500 dark:text-[#949EA8]">
               <div className="flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-slate-400 dark:text-[#64748B]" />
                 <span>Officer: {log.officer_name || log.officer_id}</span>

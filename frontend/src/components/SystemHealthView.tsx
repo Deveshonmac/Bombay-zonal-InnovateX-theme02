@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'motion/react';
 import { Activity, Radio, Cpu, AlertTriangle, PanelLeftOpen } from 'lucide-react';
 
@@ -27,15 +27,15 @@ export const SystemHealthView: React.FC<SystemHealthViewProps> = ({
   ];
 
   return (
-    <div className="w-full h-full bg-slate-50 dark:bg-[#0C1015] text-slate-900 dark:text-[#F1F5F9] flex flex-col overflow-y-auto p-4 sm:p-6 transition-colors">
+    <div className="w-full h-full bg-slate-50 dark:bg-[#150F0A] text-slate-900 dark:text-[#F1F5F9] flex flex-col overflow-y-auto p-4 sm:p-6 transition-colors">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-[#222E3C]">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-[#2E2218]">
         <div className="flex items-center gap-3">
           {isSidebarCollapsed && onToggleSidebar && (
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="p-1.5 rounded-md bg-white dark:bg-[#131922] text-slate-700 dark:text-emerald-400 border border-slate-200 dark:border-[#222E3C] hover:bg-slate-100 dark:hover:bg-[#1A232F] transition-colors cursor-pointer"
+              className="p-1.5 rounded-md bg-white dark:bg-[#1E1810] text-slate-700 dark:text-emerald-400 border border-slate-200 dark:border-[#2E2218] hover:bg-slate-100 dark:hover:bg-[#261C12] transition-colors cursor-pointer"
               title="Expand Navigation (⌘\ or [)"
             >
               <PanelLeftOpen className="w-4 h-4" />
@@ -57,7 +57,7 @@ export const SystemHealthView: React.FC<SystemHealthViewProps> = ({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           onClick={onBackToTriage}
-          className="px-3 py-1.5 rounded-md bg-white dark:bg-[#131922] hover:bg-slate-100 dark:hover:bg-[#1A232F] border border-slate-200 dark:border-[#222E3C] text-xs font-medium text-slate-700 dark:text-[#F1F5F9] transition-colors shadow-2xs cursor-pointer"
+          className="px-3 py-1.5 rounded-md bg-white dark:bg-[#1E1810] hover:bg-slate-100 dark:hover:bg-[#261C12] border border-slate-200 dark:border-[#2E2218] text-xs font-medium text-slate-700 dark:text-[#F1F5F9] transition-colors shadow-2xs cursor-pointer"
         >
           Return to Live Triage Map
         </motion.button>
@@ -69,7 +69,7 @@ export const SystemHealthView: React.FC<SystemHealthViewProps> = ({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22, delay: 0.03 }}
-          className="p-4 bg-white dark:bg-[#131922] rounded-lg border border-slate-200 dark:border-[#222E3C] space-y-1 shadow-2xs"
+          className="p-4 bg-white dark:bg-[#1E1810] rounded-lg border border-slate-200 dark:border-[#2E2218] space-y-1 shadow-2xs"
         >
           <div className="flex items-center justify-between text-xs font-mono text-slate-500 dark:text-[#949EA8]">
             <span>SAMEER API INGESTION</span>
@@ -83,7 +83,7 @@ export const SystemHealthView: React.FC<SystemHealthViewProps> = ({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22, delay: 0.06 }}
-          className="p-4 bg-white dark:bg-[#131922] rounded-lg border border-slate-200 dark:border-[#222E3C] space-y-1 shadow-2xs"
+          className="p-4 bg-white dark:bg-[#1E1810] rounded-lg border border-slate-200 dark:border-[#2E2218] space-y-1 shadow-2xs"
         >
           <div className="flex items-center justify-between text-xs font-mono text-slate-500 dark:text-[#949EA8]">
             <span>ACTIVE HOTSPOTS</span>
@@ -97,7 +97,7 @@ export const SystemHealthView: React.FC<SystemHealthViewProps> = ({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22, delay: 0.09 }}
-          className="p-4 bg-white dark:bg-[#131922] rounded-lg border border-slate-200 dark:border-[#222E3C] space-y-1 shadow-2xs"
+          className="p-4 bg-white dark:bg-[#1E1810] rounded-lg border border-slate-200 dark:border-[#2E2218] space-y-1 shadow-2xs"
         >
           <div className="flex items-center justify-between text-xs font-mono text-slate-500 dark:text-[#949EA8]">
             <span>CRITICAL SLA AT RISK</span>
@@ -111,7 +111,7 @@ export const SystemHealthView: React.FC<SystemHealthViewProps> = ({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22, delay: 0.12 }}
-          className="p-4 bg-white dark:bg-[#131922] rounded-lg border border-slate-200 dark:border-[#222E3C] space-y-1 shadow-2xs"
+          className="p-4 bg-white dark:bg-[#1E1810] rounded-lg border border-slate-200 dark:border-[#2E2218] space-y-1 shadow-2xs"
         >
           <div className="flex items-center justify-between text-xs font-mono text-slate-500 dark:text-[#949EA8]">
             <span>DECISION ENGINE</span>
@@ -123,14 +123,14 @@ export const SystemHealthView: React.FC<SystemHealthViewProps> = ({
       </div>
 
       {/* Sensor Station Table */}
-      <div className="mt-8 bg-white dark:bg-[#131922] rounded-lg border border-slate-200 dark:border-[#222E3C] overflow-hidden shadow-2xs">
-        <div className="p-4 border-b border-slate-200 dark:border-[#222E3C] flex items-center justify-between">
+      <div className="mt-8 bg-white dark:bg-[#1E1810] rounded-lg border border-slate-200 dark:border-[#2E2218] overflow-hidden shadow-2xs">
+        <div className="p-4 border-b border-slate-200 dark:border-[#2E2218] flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-900 dark:text-[#F1F5F9]">Pune Municipal Sensor Array (CAAQMS)</h2>
           <span className="text-xs font-mono text-slate-500 dark:text-[#949EA8]">6 of 6 Online</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-slate-50 dark:bg-[#0C1015] border-b border-slate-200 dark:border-[#222E3C] text-slate-500 dark:text-[#949EA8]">
+            <thead className="bg-slate-50 dark:bg-[#150F0A] border-b border-slate-200 dark:border-[#2E2218] text-slate-500 dark:text-[#949EA8]">
               <tr>
                 <th className="py-2.5 px-4 font-semibold">STATION NAME</th>
                 <th className="py-2.5 px-4 font-semibold">CURRENT AQI</th>
@@ -139,9 +139,9 @@ export const SystemHealthView: React.FC<SystemHealthViewProps> = ({
                 <th className="py-2.5 px-4 font-semibold">30D UPTIME</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#222E3C]">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#2E2218]">
               {caaqmsStations.map(station => (
-                <tr key={station.name} className="hover:bg-slate-50/60 dark:hover:bg-[#1A232F]/60 transition-colors">
+                <tr key={station.name} className="hover:bg-slate-50/60 dark:hover:bg-[#261C12]/60 transition-colors">
                   <td className="py-3 px-4 font-medium text-slate-900 dark:text-[#F1F5F9]">{station.name}</td>
                   <td className="py-3 px-4">
                     <span className="font-bold text-amber-600 dark:text-amber-400">{station.aqi}</span>

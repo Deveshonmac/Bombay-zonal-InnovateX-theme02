@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings, Languages, Moon, Sun, Type, LogOut, UserCheck, Check,
@@ -216,12 +216,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               className={`p-3.5 rounded-lg border cursor-pointer transition-all ${theme==='dark'?'bg-slate-900 border-emerald-500 ring-1 ring-emerald-500/20':(isDark?'bg-[#0B1120] border-slate-800 hover:border-slate-600':'bg-zinc-50 border-zinc-200 hover:border-zinc-400')}`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded bg-[#0C1015] border border-[#222E3C] flex items-center justify-center text-emerald-400"><Moon className="w-3.5 h-3.5" /></div>
+                  <div className="w-7 h-7 rounded bg-[#150F0A] border border-[#2E2218] flex items-center justify-center text-emerald-400"><Moon className="w-3.5 h-3.5" /></div>
                   <span className={`text-xs font-bold ${theme==='dark'?'text-slate-100':textPri}`}>{t('settings.theme_dark','Dark Command Canvas')}</span>
                 </div>
                 <RadioDot active={theme==='dark'} />
               </div>
-              <div className="p-2 rounded bg-[#0C1015] border border-[#222E3C] flex items-center justify-between text-[10px] font-mono">
+              <div className="p-2 rounded bg-[#150F0A] border border-[#2E2218] flex items-center justify-between text-[10px] font-mono">
                 <span className="text-emerald-400">● 24h Night-Shift Ops</span><span className="text-slate-500">Zero Eye Strain</span>
               </div>
             </motion.div>

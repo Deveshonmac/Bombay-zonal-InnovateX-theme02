@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { IncidentCluster } from '../types';
 import { useTheme } from '../context/ThemeContext';
@@ -274,10 +274,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
       // Custom HTML/CSS DivIcon with Dark Command Palette:
       const selectedRingClass = isSelected 
-        ? (theme === 'dark' ? 'ring-3 ring-emerald-400 ring-offset-2 ring-offset-[#0C1015]' : 'ring-3 ring-blue-600 ring-offset-2') 
+        ? (theme === 'dark' ? 'ring-3 ring-emerald-400 ring-offset-2 ring-offset-[#150F0A]' : 'ring-3 ring-blue-600 ring-offset-2') 
         : '';
       const fontSizeClass = markerDiameter >= 42 ? 'text-xs' : 'text-[11px]';
-      const markerBg = theme === 'dark' ? '#131922' : '#FFFFFF';
+      const markerBg = theme === 'dark' ? '#1E1810' : '#FFFFFF';
       const markerTextColor = isResolved 
         ? (theme === 'dark' ? 'text-emerald-400' : 'text-emerald-700')
         : isCritical 
@@ -325,11 +325,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       L.DomEvent.disableClickPropagation(popupContainer);
       L.DomEvent.disableScrollPropagation(popupContainer);
 
-      const cardBg = theme === 'dark' ? 'bg-[#131922] border-[#222E3C] text-[#F1F5F9]' : 'bg-white border-slate-200 text-slate-900';
+      const cardBg = theme === 'dark' ? 'bg-[#1E1810] border-[#2E2218] text-[#F1F5F9]' : 'bg-white border-slate-200 text-slate-900';
       const textTitleColor = theme === 'dark' ? 'text-[#F1F5F9]' : 'text-slate-900';
       const textMutedColor = theme === 'dark' ? 'text-[#94A3B8]' : 'text-slate-500';
       const textAqi = theme === 'dark' ? 'text-amber-400' : 'text-amber-800';
-      const borderDivider = theme === 'dark' ? 'border-[#222E3C] text-[#94A3B8]' : 'border-slate-100 text-slate-700';
+      const borderDivider = theme === 'dark' ? 'border-[#2E2218] text-[#94A3B8]' : 'border-slate-100 text-slate-700';
 
       popupContainer.innerHTML = `
         <div class="${cardBg} rounded-lg border shadow-xl p-3 min-w-[250px] font-sans select-none">
@@ -456,7 +456,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-120px)] md:h-full overflow-hidden select-none bg-slate-100 dark:bg-[#0C1015] transition-colors">
+    <div className="relative w-full h-[calc(100vh-120px)] md:h-full overflow-hidden select-none bg-slate-100 dark:bg-[#150F0A] transition-colors">
       {/* Map Leaflet Container */}
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
@@ -473,18 +473,18 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 window.dispatchEvent(new CustomEvent('toggle-left-sidebar'));
               }
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#131922] text-[#F1F5F9] hover:bg-[#1A232F] border border-[#222E3C] hover:border-emerald-500/60 shadow-lg rounded-md text-xs font-semibold cursor-pointer select-none transition-all group"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1E1810] text-[#F1F5F9] hover:bg-[#261C12] border border-[#2E2218] hover:border-emerald-500/60 shadow-lg rounded-md text-xs font-semibold cursor-pointer select-none transition-all group"
             title="Expand Navigation Sidebar (⌘\ or [)"
           >
             <PanelLeftOpen className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">Show Sidebar</span>
-            <kbd className="hidden lg:inline text-[9px] text-[#94A3B8] font-mono bg-[#0C1015] px-1 py-0.5 rounded border border-[#222E3C]">
+            <kbd className="hidden lg:inline text-[9px] text-[#94A3B8] font-mono bg-[#150F0A] px-1 py-0.5 rounded border border-[#2E2218]">
               ⌘\
             </kbd>
           </button>
         )}
 
-        <div className="bg-white/95 dark:bg-[#131922]/95 backdrop-blur-md border border-slate-200 dark:border-[#222E3C] shadow-md rounded-md px-3 py-1.5 flex items-center text-xs transition-colors">
+        <div className="bg-white/95 dark:bg-[#1E1810]/95 backdrop-blur-md border border-slate-200 dark:border-[#2E2218] shadow-md rounded-md px-3 py-1.5 flex items-center text-xs transition-colors">
           <div className="flex items-center gap-2 min-w-0">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 inline-block animate-pulse"></span>
             <span className="font-semibold text-slate-900 dark:text-[#F1F5F9] text-[11px] truncate font-mono">
@@ -494,7 +494,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           <button
             type="button"
             onClick={handleResetView}
-            className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-mono font-medium border-l border-slate-200 dark:border-[#222E3C] pl-2.5 ml-2.5 transition-colors cursor-pointer flex items-center shrink-0"
+            className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-mono font-medium border-l border-slate-200 dark:border-[#2E2218] pl-2.5 ml-2.5 transition-colors cursor-pointer flex items-center shrink-0"
             title="Reset map view to Pune Municipal Corporation central view"
           >
             Reset Camera
@@ -515,7 +515,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 window.dispatchEvent(new CustomEvent('toggle-queue'));
               }
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#131922] text-[#F1F5F9] hover:bg-[#1A232F] border border-[#222E3C] hover:border-emerald-500/60 shadow-lg rounded-md text-xs font-semibold cursor-pointer select-none transition-all group backdrop-blur-md"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1E1810] text-[#F1F5F9] hover:bg-[#261C12] border border-[#2E2218] hover:border-emerald-500/60 shadow-lg rounded-md text-xs font-semibold cursor-pointer select-none transition-all group backdrop-blur-md"
             title="Expand Priority Queue (⌘B or ])"
           >
             <PanelRightOpen className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
@@ -525,7 +525,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 {criticalCount > 0 ? `${criticalCount} Urg` : `${clusters.length}`}
               </span>
             )}
-            <kbd className="hidden lg:inline text-[9px] text-[#94A3B8] font-mono bg-[#0C1015] px-1 py-0.5 rounded border border-[#222E3C]">
+            <kbd className="hidden lg:inline text-[9px] text-[#94A3B8] font-mono bg-[#150F0A] px-1 py-0.5 rounded border border-[#2E2218]">
               ⌘B
             </kbd>
           </button>
@@ -535,7 +535,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           <button
             type="button"
             onClick={() => setShowStyleMenu(prev => !prev)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/95 dark:bg-[#131922]/95 backdrop-blur-md border border-slate-200 dark:border-[#222E3C] shadow-md rounded-md text-xs font-mono text-slate-700 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F1F5F9] cursor-pointer transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/95 dark:bg-[#1E1810]/95 backdrop-blur-md border border-slate-200 dark:border-[#2E2218] shadow-md rounded-md text-xs font-mono text-slate-700 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F1F5F9] cursor-pointer transition-colors"
             title="Switch Map Tile Layer (No API Key Required)"
           >
             <Layers className="w-3.5 h-3.5 text-emerald-500" />
@@ -545,7 +545,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           </button>
 
         {showStyleMenu && (
-          <div className="mt-1.5 bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded-md shadow-xl p-1.5 min-w-[170px] flex flex-col gap-1 text-xs font-mono z-30 animate-in fade-in slide-in-from-top-1">
+          <div className="mt-1.5 bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded-md shadow-xl p-1.5 min-w-[170px] flex flex-col gap-1 text-xs font-mono z-30 animate-in fade-in slide-in-from-top-1">
             <button
               type="button"
               onClick={() => {
@@ -555,7 +555,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               className={`px-2 py-1.5 rounded text-left flex items-center justify-between cursor-pointer transition-colors ${
                 mapStyle === 'gis' 
                   ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold' 
-                  : 'text-slate-700 dark:text-[#949EA8] hover:bg-slate-50 dark:hover:bg-[#1A232F]'
+                  : 'text-slate-700 dark:text-[#949EA8] hover:bg-slate-50 dark:hover:bg-[#261C12]'
               }`}
             >
               <span>{theme === 'dark' ? 'Dark GIS Canvas' : 'Light GIS Canvas'}</span>
@@ -570,13 +570,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               className={`px-2 py-1.5 rounded text-left flex items-center justify-between cursor-pointer transition-colors ${
                 mapStyle === 'osm' 
                   ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold' 
-                  : 'text-slate-700 dark:text-[#949EA8] hover:bg-slate-50 dark:hover:bg-[#1A232F]'
+                  : 'text-slate-700 dark:text-[#949EA8] hover:bg-slate-50 dark:hover:bg-[#261C12]'
               }`}
             >
               <span>OpenStreetMap</span>
               {mapStyle === 'osm' && <span className="text-[10px]">●</span>}
             </button>
-            <div className="pt-1 border-t border-slate-100 dark:border-[#222E3C] text-[9px] text-slate-400 dark:text-[#64748B] px-1">
+            <div className="pt-1 border-t border-slate-100 dark:border-[#2E2218] text-[9px] text-slate-400 dark:text-[#64748B] px-1">
               ✓ 100% Free &amp; Keyless
             </div>
           </div>
@@ -585,12 +585,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       </div>
 
       {/* Zoom Controls */}
-      <div className="absolute bottom-16 right-3 md:bottom-4 md:right-4 z-10 flex flex-col bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded-md shadow-md overflow-hidden divide-y divide-slate-100 dark:divide-[#222E3C] transition-colors">
+      <div className="absolute bottom-16 right-3 md:bottom-4 md:right-4 z-10 flex flex-col bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded-md shadow-md overflow-hidden divide-y divide-slate-100 dark:divide-[#2E2218] transition-colors">
         <button
           type="button"
           onClick={() => mapInstanceRef.current?.zoomIn()}
           aria-label="Zoom in"
-          className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-800 dark:text-[#F1F5F9] hover:bg-slate-50 dark:hover:bg-[#1A232F] font-bold text-sm select-none transition-colors cursor-pointer touch-manipulation"
+          className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-800 dark:text-[#F1F5F9] hover:bg-slate-50 dark:hover:bg-[#261C12] font-bold text-sm select-none transition-colors cursor-pointer touch-manipulation"
         >
           +
         </button>
@@ -598,27 +598,27 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           type="button"
           onClick={() => mapInstanceRef.current?.zoomOut()}
           aria-label="Zoom out"
-          className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-800 dark:text-[#F1F5F9] hover:bg-slate-50 dark:hover:bg-[#1A232F] font-bold text-sm select-none transition-colors cursor-pointer touch-manipulation"
+          className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-slate-800 dark:text-[#F1F5F9] hover:bg-slate-50 dark:hover:bg-[#261C12] font-bold text-sm select-none transition-colors cursor-pointer touch-manipulation"
         >
           &minus;
         </button>
       </div>
 
       {/* Bottom Legend with True Semantic Colors */}
-      <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 z-10 hidden sm:flex bg-white/95 dark:bg-[#131922]/95 backdrop-blur-md px-3 py-1.5 rounded-md border border-slate-200 dark:border-[#222E3C] shadow-md text-[10px] font-mono text-slate-700 dark:text-[#949EA8] items-center gap-3 transition-colors">
+      <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 z-10 hidden sm:flex bg-white/95 dark:bg-[#1E1810]/95 backdrop-blur-md px-3 py-1.5 rounded-md border border-slate-200 dark:border-[#2E2218] shadow-md text-[10px] font-mono text-slate-700 dark:text-[#949EA8] items-center gap-3 transition-colors">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full border-2 border-rose-500 bg-white dark:bg-[#131922] inline-block"></span>
+          <span className="w-2.5 h-2.5 rounded-full border-2 border-rose-500 bg-white dark:bg-[#1E1810] inline-block"></span>
           <span className="font-semibold text-rose-700 dark:text-rose-400">Critical (&lt;6h SLA)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full border-2 border-sky-500 bg-white dark:bg-[#131922] inline-block"></span>
+          <span className="w-2.5 h-2.5 rounded-full border-2 border-sky-500 bg-white dark:bg-[#1E1810] inline-block"></span>
           <span className="font-semibold text-blue-800 dark:text-sky-400">Elevated</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full border-2 border-emerald-500 bg-white dark:bg-[#131922] inline-block"></span>
+          <span className="w-2.5 h-2.5 rounded-full border-2 border-emerald-500 bg-white dark:bg-[#1E1810] inline-block"></span>
           <span className="font-semibold text-emerald-800 dark:text-emerald-400">Resolved</span>
         </div>
-        <span className="text-slate-300 dark:text-[#222E3C]">|</span>
+        <span className="text-slate-300 dark:text-[#2E2218]">|</span>
         <span className="text-slate-500 dark:text-[#64748B]">Size = Volume</span>
       </div>
     </div>

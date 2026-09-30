@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+﻿import React, { useState, useMemo, useRef } from 'react';
 import { IncidentCluster, ResolutionRecord } from '../types';
 import { 
   X, 
@@ -119,10 +119,10 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 select-none animate-in fade-in duration-150 transition-colors">
-      <div className="bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded-lg shadow-2xl max-w-xl w-full max-h-[92vh] flex flex-col text-slate-900 dark:text-[#F1F5F9] overflow-hidden">
+      <div className="bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded-lg shadow-2xl max-w-xl w-full max-h-[92vh] flex flex-col text-slate-900 dark:text-[#F1F5F9] overflow-hidden">
         
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 dark:border-[#222E3C] bg-slate-50 dark:bg-[#0C1015] flex items-center justify-between shrink-0">
+        <div className="p-4 border-b border-slate-200 dark:border-[#2E2218] bg-slate-50 dark:bg-[#150F0A] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300">
               <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -145,7 +145,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close modal"
-            className="w-8 h-8 rounded text-slate-400 hover:text-slate-700 dark:hover:text-[#F1F5F9] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#1A232F] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded text-slate-400 hover:text-slate-700 dark:hover:text-[#F1F5F9] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#261C12] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -155,7 +155,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto text-xs">
           
           {/* Target Cluster Snapshot */}
-          <div className="p-3 bg-slate-50 dark:bg-[#0C1015] rounded-md border border-slate-200 dark:border-[#222E3C] space-y-1">
+          <div className="p-3 bg-slate-50 dark:bg-[#150F0A] rounded-md border border-slate-200 dark:border-[#2E2218] space-y-1">
             <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-[#64748B] font-semibold block">
               Incident Context
             </span>
@@ -174,7 +174,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
             <select
               value={actionExecuted}
               onChange={e => setActionExecuted(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-[#0C1015] border border-slate-300 dark:border-[#222E3C] rounded-md px-3 py-2 text-xs text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#131922] font-sans"
+              className="w-full bg-slate-50 dark:bg-[#150F0A] border border-slate-300 dark:border-[#2E2218] rounded-md px-3 py-2 text-xs text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#1E1810] font-sans"
               required
             >
               {ACTION_OPTIONS.map(opt => (
@@ -186,7 +186,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
           </div>
 
           {/* 2. Ambient Air Quality Delta Verification (Pre vs Post AQI) */}
-          <div className="p-3.5 bg-slate-50 dark:bg-[#0C1015] rounded-lg border border-slate-200 dark:border-[#222E3C] space-y-3">
+          <div className="p-3.5 bg-slate-50 dark:bg-[#150F0A] rounded-lg border border-slate-200 dark:border-[#2E2218] space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-800 dark:text-[#F1F5F9] font-mono">
                 Ambient Air Quality Delta Verification
@@ -199,7 +199,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Pre-Intervention AQI (Read-only) */}
-              <div className="bg-white dark:bg-[#131922] p-2.5 rounded-md border border-slate-200 dark:border-[#222E3C] space-y-1">
+              <div className="bg-white dark:bg-[#1E1810] p-2.5 rounded-md border border-slate-200 dark:border-[#2E2218] space-y-1">
                 <label className="block text-[10px] font-mono text-slate-400 dark:text-[#64748B] uppercase">
                   Pre-Intervention AQI
                 </label>
@@ -210,7 +210,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
               </div>
 
               {/* Post-Intervention AQI (Editable Input) */}
-              <div className="bg-white dark:bg-[#131922] p-2.5 rounded-md border border-slate-200 dark:border-[#222E3C] space-y-1">
+              <div className="bg-white dark:bg-[#1E1810] p-2.5 rounded-md border border-slate-200 dark:border-[#2E2218] space-y-1">
                 <label className="block text-[10px] font-mono text-slate-700 dark:text-[#F1F5F9] uppercase font-semibold">
                   Post-Intervention AQI
                 </label>
@@ -220,7 +220,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
                   max={preAqi}
                   value={postAqi}
                   onChange={e => setPostAqi(Number(e.target.value))}
-                  className="w-full bg-slate-50 dark:bg-[#0C1015] border border-slate-300 dark:border-[#222E3C] rounded px-2 py-0.5 text-base font-bold font-mono text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:border-emerald-600"
+                  className="w-full bg-slate-50 dark:bg-[#150F0A] border border-slate-300 dark:border-[#2E2218] rounded px-2 py-0.5 text-base font-bold font-mono text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:border-emerald-600"
                   required
                 />
                 <span className="text-[10px] text-slate-500 dark:text-[#94A3B8] font-mono block">Sensor Reading</span>
@@ -242,7 +242,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
             </div>
 
             {/* Nearest CAAQMS Attribution */}
-            <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-[#94A3B8] pt-1 border-t border-slate-200 dark:border-[#222E3C]">
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-[#94A3B8] pt-1 border-t border-slate-200 dark:border-[#2E2218]">
               <span className="flex items-center gap-1.5">
                 <Radio className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Attributed Telemetry Station:</span>
@@ -265,7 +265,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
               className={`border-2 border-dashed rounded-lg p-3.5 text-center cursor-pointer transition-colors ${
                 isDragOver 
                   ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30' 
-                  : 'border-slate-300 dark:border-[#222E3C] hover:border-emerald-500 dark:hover:border-emerald-400 bg-slate-50 dark:bg-[#0C1015]'
+                  : 'border-slate-300 dark:border-[#2E2218] hover:border-emerald-500 dark:hover:border-emerald-400 bg-slate-50 dark:bg-[#150F0A]'
               }`}
             >
               <input
@@ -291,7 +291,7 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
             </div>
 
             {uploadedFile && (
-              <div className="p-2 bg-slate-50 dark:bg-[#0C1015] rounded border border-slate-200 dark:border-[#222E3C] flex items-center justify-between text-xs">
+              <div className="p-2 bg-slate-50 dark:bg-[#150F0A] rounded border border-slate-200 dark:border-[#2E2218] flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 min-w-0">
                   <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span className="font-mono text-slate-800 dark:text-[#F1F5F9] truncate">{uploadedFile.name}</span>
@@ -313,17 +313,17 @@ export const ResolveIncidentModal: React.FC<ResolveIncidentModalProps> = ({
               rows={3}
               value={officerNote}
               onChange={e => setOfficerNote(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-[#0C1015] border border-slate-300 dark:border-[#222E3C] rounded-md p-2.5 text-xs text-slate-900 dark:text-[#F1F5F9] font-sans focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#131922] leading-relaxed"
+              className="w-full bg-slate-50 dark:bg-[#150F0A] border border-slate-300 dark:border-[#2E2218] rounded-md p-2.5 text-xs text-slate-900 dark:text-[#F1F5F9] font-sans focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#1E1810] leading-relaxed"
               required
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-200 dark:border-[#222E3C]">
+          <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-200 dark:border-[#2E2218]">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-2 rounded-md text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#1A232F] text-xs font-medium transition-colors cursor-pointer"
+              className="px-3.5 py-2 rounded-md text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#261C12] text-xs font-medium transition-colors cursor-pointer"
             >
               Cancel
             </button>

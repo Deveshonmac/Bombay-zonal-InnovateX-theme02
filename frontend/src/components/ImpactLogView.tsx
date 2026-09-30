@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { IncidentCluster } from '../types';
 import { 
   TrendingDown, 
@@ -163,17 +163,17 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
   }, [allRecords]);
 
   return (
-    <div className="w-full h-full bg-slate-50 dark:bg-[#0C1015] text-slate-900 dark:text-[#F1F5F9] flex flex-col overflow-y-auto select-none transition-colors">
+    <div className="w-full h-full bg-slate-50 dark:bg-[#150F0A] text-slate-900 dark:text-[#F1F5F9] flex flex-col overflow-y-auto select-none transition-colors">
       
       {/* Sticky Top Header Bar */}
-      <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-[#222E3C] bg-white/90 dark:bg-[#131922]/90 backdrop-blur-md sticky top-0 z-20 space-y-4 transition-colors">
+      <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-[#2E2218] bg-white/90 dark:bg-[#1E1810]/90 backdrop-blur-md sticky top-0 z-20 space-y-4 transition-colors">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             {isSidebarCollapsed && onToggleSidebar && (
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className="p-1.5 rounded-md bg-white dark:bg-[#131922] text-slate-700 dark:text-emerald-400 border border-slate-200 dark:border-[#222E3C] hover:bg-slate-100 dark:hover:bg-[#1A232F] transition-colors cursor-pointer"
+                className="p-1.5 rounded-md bg-white dark:bg-[#1E1810] text-slate-700 dark:text-emerald-400 border border-slate-200 dark:border-[#2E2218] hover:bg-slate-100 dark:hover:bg-[#261C12] transition-colors cursor-pointer"
                 title="Expand Navigation (⌘\ or [)"
               >
                 <PanelLeftOpen className="w-4 h-4" />
@@ -182,7 +182,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
             <button
               type="button"
               onClick={onBackToTriage}
-              className="p-1.5 rounded text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F1F5F9] hover:bg-slate-100 dark:hover:bg-[#1A232F] transition-colors flex items-center justify-center cursor-pointer"
+              className="p-1.5 rounded text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F1F5F9] hover:bg-slate-100 dark:hover:bg-[#261C12] transition-colors flex items-center justify-center cursor-pointer"
               title="Return to Triage Command Map"
               aria-label="Back to Triage"
             >
@@ -208,7 +208,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
             <button
               type="button"
               onClick={() => window.print()}
-              className="px-3 py-1.5 rounded border border-slate-200 dark:border-[#222E3C] bg-white dark:bg-[#131922] hover:bg-slate-50 dark:hover:bg-[#1A232F] text-slate-800 dark:text-[#F1F5F9] text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              className="px-3 py-1.5 rounded border border-slate-200 dark:border-[#2E2218] bg-white dark:bg-[#1E1810] hover:bg-slate-50 dark:hover:bg-[#261C12] text-slate-800 dark:text-[#F1F5F9] text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
             >
               <Download className="w-3.5 h-3.5 text-slate-500 dark:text-[#94A3B8]" />
               <span>Export Audit Ledger</span>
@@ -219,7 +219,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
         {/* Header KPI Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* KPI Card 1: Total Incidents Resolved */}
-          <div className="bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded-lg p-3.5 shadow-2xs">
+          <div className="bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded-lg p-3.5 shadow-2xs">
             <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-[#94A3B8] block font-semibold">
               Total Incidents Resolved
             </span>
@@ -238,7 +238,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
           </div>
 
           {/* KPI Card 2: Average AQI Reduction */}
-          <div className="bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded-lg p-3.5 shadow-2xs">
+          <div className="bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded-lg p-3.5 shadow-2xs">
             <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-[#94A3B8] block font-semibold">
               Average AQI Reduction
             </span>
@@ -256,7 +256,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
           </div>
 
           {/* KPI Card 3: SLA Compliance % */}
-          <div className="bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded-lg p-3.5 shadow-2xs">
+          <div className="bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded-lg p-3.5 shadow-2xs">
             <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-[#94A3B8] block font-semibold">
               SLA Compliance %
             </span>
@@ -282,16 +282,16 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search resolved incidents by title, ward, intervention executed, or timestamp..."
-            className="w-full bg-slate-50 dark:bg-[#0C1015] text-xs text-slate-900 dark:text-[#F1F5F9] placeholder:text-slate-400 dark:placeholder:text-[#64748B] pl-9 pr-3 py-2 rounded-md border border-slate-200 dark:border-[#222E3C] focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#131922] font-sans transition-colors"
+            className="w-full bg-slate-50 dark:bg-[#150F0A] text-xs text-slate-900 dark:text-[#F1F5F9] placeholder:text-slate-400 dark:placeholder:text-[#64748B] pl-9 pr-3 py-2 rounded-md border border-slate-200 dark:border-[#2E2218] focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#1E1810] font-sans transition-colors"
           />
         </div>
       </div>
 
       {/* High-Density Data Table */}
       <div className="p-4 flex-1">
-        <div className="bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded-lg overflow-hidden shadow-2xs">
+        <div className="bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded-lg overflow-hidden shadow-2xs">
           
-          <div className="p-3 border-b border-slate-200 dark:border-[#222E3C] bg-slate-50 dark:bg-[#0C1015] flex items-center justify-between">
+          <div className="p-3 border-b border-slate-200 dark:border-[#2E2218] bg-slate-50 dark:bg-[#150F0A] flex items-center justify-between">
             <h2 className="text-xs font-bold text-slate-800 dark:text-[#F1F5F9] uppercase tracking-wider font-mono">
               Actioned Incidents &amp; Ambient AQI Ledger
             </h2>
@@ -303,7 +303,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-[#222E3C] bg-slate-50 dark:bg-[#0C1015] text-[11px] font-mono text-slate-500 dark:text-[#949EA8] uppercase tracking-wider select-none">
+                <tr className="border-b border-slate-200 dark:border-[#2E2218] bg-slate-50 dark:bg-[#150F0A] text-[11px] font-mono text-slate-500 dark:text-[#949EA8] uppercase tracking-wider select-none">
                   <th className="py-2.5 px-3.5 font-semibold">Incident Title</th>
                   <th className="py-2.5 px-3 font-semibold">Ward</th>
                   <th className="py-2.5 px-3 font-semibold">Intervention Executed</th>
@@ -313,7 +313,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
                   <th className="py-2.5 px-3.5 font-semibold">Timestamp</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-[#222E3C] font-sans">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#2E2218] font-sans">
                 {filteredRecords.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-10 text-center text-slate-400 dark:text-[#64748B] font-mono text-xs">
@@ -325,7 +325,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
                     <tr
                       key={record.id}
                       onClick={() => setSelectedRecord(record)}
-                      className="hover:bg-slate-50/80 dark:hover:bg-[#1A232F] transition-colors cursor-pointer group"
+                      className="hover:bg-slate-50/80 dark:hover:bg-[#261C12] transition-colors cursor-pointer group"
                     >
                       {/* Column 1: Incident Title */}
                       <td className="py-3 px-3.5">
@@ -392,9 +392,9 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
       {/* Detail Modal for Selected Record */}
       {selectedRecord && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded-lg shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 dark:text-[#F1F5F9] animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded-lg shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 dark:text-[#F1F5F9] animate-in fade-in zoom-in-95 duration-150">
             
-            <div className="p-4 border-b border-slate-200 dark:border-[#222E3C] bg-slate-50 dark:bg-[#0C1015] flex items-center justify-between">
+            <div className="p-4 border-b border-slate-200 dark:border-[#2E2218] bg-slate-50 dark:bg-[#150F0A] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -411,7 +411,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedRecord(null)}
-                className="w-8 h-8 rounded text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1A232F] flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#261C12] flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
@@ -428,18 +428,18 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
               </div>
 
               {/* Verified Ambient Impact Snapshot */}
-              <div className="p-3.5 bg-slate-50 dark:bg-[#0C1015] rounded-lg border border-slate-200 dark:border-[#222E3C] space-y-2.5">
+              <div className="p-3.5 bg-slate-50 dark:bg-[#150F0A] rounded-lg border border-slate-200 dark:border-[#2E2218] space-y-2.5">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-[#949EA8] font-semibold block">
                   Ambient Air Quality Delta
                 </span>
 
                 <div className="grid grid-cols-3 gap-2 items-center font-mono">
-                  <div className="bg-white dark:bg-[#131922] p-2 rounded border border-slate-200 dark:border-[#222E3C]">
+                  <div className="bg-white dark:bg-[#1E1810] p-2 rounded border border-slate-200 dark:border-[#2E2218]">
                     <span className="text-[10px] text-slate-400 dark:text-[#64748B] block">Pre-Intervention:</span>
                     <span className="text-base font-bold text-slate-800 dark:text-[#F1F5F9]">{selectedRecord.pre_aqi} AQI</span>
                   </div>
 
-                  <div className="bg-white dark:bg-[#131922] p-2 rounded border border-slate-200 dark:border-[#222E3C]">
+                  <div className="bg-white dark:bg-[#1E1810] p-2 rounded border border-slate-200 dark:border-[#2E2218]">
                     <span className="text-[10px] text-slate-400 dark:text-[#64748B] block">Post-Intervention:</span>
                     <span className="text-base font-bold text-slate-900 dark:text-[#F1F5F9]">{selectedRecord.post_aqi} AQI</span>
                   </div>
@@ -453,7 +453,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
                 </div>
 
                 {selectedRecord.sensor_station && (
-                  <div className="pt-2 border-t border-slate-200 dark:border-[#222E3C] text-[11px] font-mono text-slate-600 dark:text-[#949EA8] flex items-center gap-1.5">
+                  <div className="pt-2 border-t border-slate-200 dark:border-[#2E2218] text-[11px] font-mono text-slate-600 dark:text-[#949EA8] flex items-center gap-1.5">
                     <Radio className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>Station: {selectedRecord.sensor_station}</span>
                   </div>
@@ -464,13 +464,13 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
                 <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 dark:text-[#64748B] font-semibold block">
                   Action Executed
                 </span>
-                <p className="font-semibold text-slate-900 dark:text-[#F1F5F9] bg-white dark:bg-[#0C1015] p-2.5 rounded border border-slate-200 dark:border-[#222E3C]">
+                <p className="font-semibold text-slate-900 dark:text-[#F1F5F9] bg-white dark:bg-[#150F0A] p-2.5 rounded border border-slate-200 dark:border-[#2E2218]">
                   {selectedRecord.intervention}
                 </p>
               </div>
 
               {selectedRecord.evidence_photo_url && (
-                <div className="p-2.5 bg-slate-50 dark:bg-[#0C1015] rounded border border-slate-200 dark:border-[#222E3C] flex items-center justify-between font-mono text-[11px]">
+                <div className="p-2.5 bg-slate-50 dark:bg-[#150F0A] rounded border border-slate-200 dark:border-[#2E2218] flex items-center justify-between font-mono text-[11px]">
                   <div className="flex items-center gap-2">
                     <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span className="text-slate-800 dark:text-[#F1F5F9] font-semibold">{selectedRecord.evidence_photo_url}</span>
@@ -481,7 +481,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
                 </div>
               )}
 
-              <div className="pt-2 border-t border-slate-200 dark:border-[#222E3C] flex items-center justify-between font-mono text-[11px] text-slate-500 dark:text-[#949EA8]">
+              <div className="pt-2 border-t border-slate-200 dark:border-[#2E2218] flex items-center justify-between font-mono text-[11px] text-slate-500 dark:text-[#949EA8]">
                 <span>Officer: {selectedRecord.officer_id || 'Smt. P. S. Jadhav (Nodal Officer)'}</span>
                 <span>{selectedRecord.timestamp}</span>
               </div>

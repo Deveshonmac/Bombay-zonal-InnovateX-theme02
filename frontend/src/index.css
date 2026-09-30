@@ -5,55 +5,55 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-canvas: #F8FAFC;
-  --color-panel: #FFFFFF;
-  --color-panel-border: #E2E8F0;
-  --color-panel-hover: #F1F5F9;
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #475569;
-  --color-text-muted: #64748B;
-  --color-brand: #059669;
-  --color-brand-dark: #064E3B;
-  --color-brand-light: #ECFDF5;
+  --color-canvas: #FEF9F2;
+  --color-panel: #FFFDF9;
+  --color-panel-border: #EAE2D8;
+  --color-panel-hover: #F5EDE0;
+  --color-text-primary: #1C120A;
+  --color-text-secondary: #6E5A47;
+  --color-text-muted: #9B8472;
+  --color-brand: #D97706;
+  --color-brand-dark: #92400E;
+  --color-brand-light: #FFFBEB;
   --color-signal-critical: #E11D48;
   --color-signal-warning: #D97706;
   --color-signal-resolved: #059669;
 }
 
 :root {
-  --canvas: #F8FAFC;
-  --panel: #FFFFFF;
-  --panel-border: #E2E8F0;
-  --panel-hover: #F1F5F9;
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
-  --brand: #059669;
+  --canvas: #FEF9F2;
+  --panel: #FFFDF9;
+  --panel-border: #EAE2D8;
+  --panel-hover: #F5EDE0;
+  --text-primary: #1C120A;
+  --text-secondary: #6E5A47;
+  --text-muted: #9B8472;
+  --brand: #D97706;
   --signal-critical: #E11D48;
   --signal-warning: #D97706;
   --signal-resolved: #059669;
   color-scheme: light;
 }
 
-/* Bespoke Institutional Command Palette: Deep Mineral Graphite & Celadon Telemetry */
+/* Warm Hearth Palette — Amber & Sandstone */
 .dark {
-  --canvas: #0C1015;
-  --panel: #131922;
-  --panel-border: #222E3C;
-  --panel-hover: #1A232F;
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --brand: #10B981;
+  --canvas: #150F0A;
+  --panel: #1E1810;
+  --panel-border: #2E2218;
+  --panel-hover: #261C12;
+  --text-primary: #FEF3E2;
+  --text-secondary: #B89880;
+  --text-muted: #786050;
+  --brand: #FBBF24;
   --signal-critical: #F43F5E;
-  --signal-warning: #F59E0B;
+  --signal-warning: #FBBF24;
   --signal-resolved: #10B981;
   color-scheme: dark;
 }
 
 body {
-  background-color: #F8FAFC;
-  color: #0F172A;
+  background-color: #FEF9F2;
+  color: #1C120A;
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -70,13 +70,13 @@ code, pre, .font-mono {
 }
 
 body.dark {
-  background-color: #0C1015;
-  color: #F1F5F9;
+  background-color: #150F0A;
+  color: #FEF3E2;
 }
 
 /* Institutional Leaflet Container */
 .leaflet-container {
-  background: #E2E8F0 !important;
+  background: #EAE2D8 !important;
   font-family: inherit;
   outline: none;
   width: 100%;
@@ -84,26 +84,26 @@ body.dark {
 }
 
 .dark .leaflet-container {
-  background: #0C1015 !important;
+  background: #150F0A !important;
 }
 
 /* Map Zoom Controls */
 .leaflet-bar {
-  border: 1px solid #CBD5E1 !important;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.08) !important;
+  border: 1px solid #D4C5B0 !important;
+  box-shadow: 0 1px 3px 0 rgba(28, 18, 10, 0.08) !important;
   border-radius: 6px !important;
   overflow: hidden;
 }
 
 .dark .leaflet-bar {
-  border: 1px solid #222E3C !important;
+  border: 1px solid #2E2218 !important;
   box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.5) !important;
 }
 
 .leaflet-bar a {
-  background-color: #FFFFFF !important;
-  color: #1E293B !important;
-  border-bottom: 1px solid #E2E8F0 !important;
+  background-color: #FFFDF9 !important;
+  color: #1C120A !important;
+  border-bottom: 1px solid #EAE2D8 !important;
   width: 28px !important;
   height: 28px !important;
   line-height: 28px !important;
@@ -111,55 +111,55 @@ body.dark {
 }
 
 .dark .leaflet-bar a {
-  background-color: #131922 !important;
-  color: #F1F5F9 !important;
-  border-bottom: 1px solid #222E3C !important;
+  background-color: #1E1810 !important;
+  color: #FEF3E2 !important;
+  border-bottom: 1px solid #2E2218 !important;
 }
 
 .leaflet-bar a:hover {
-  background-color: #F1F5F9 !important;
-  color: #0F172A !important;
+  background-color: #F5EDE0 !important;
+  color: #1C120A !important;
 }
 
 .dark .leaflet-bar a:hover {
-  background-color: #1A232F !important;
+  background-color: #261C12 !important;
   color: #FFFFFF !important;
 }
 
 .leaflet-control-attribution {
-  background-color: rgba(255, 255, 255, 0.88) !important;
-  color: #64748B !important;
+  background-color: rgba(255, 253, 249, 0.88) !important;
+  color: #9B8472 !important;
   font-size: 10px !important;
   border-top-left-radius: 4px;
 }
 
 .dark .leaflet-control-attribution {
-  background-color: rgba(19, 25, 34, 0.92) !important;
-  color: #94A3B8 !important;
+  background-color: rgba(30, 24, 16, 0.92) !important;
+  color: #B89880 !important;
 }
 
 .leaflet-control-attribution a {
-  color: #475569 !important;
+  color: #6E5A47 !important;
 }
 
 .dark .leaflet-control-attribution a {
-  color: #10B981 !important;
+  color: #FBBF24 !important;
 }
 
 /* Institutional Popups */
 .leaflet-popup-content-wrapper {
-  background: #FFFFFF !important;
-  color: #0F172A !important;
-  border: 1px solid #CBD5E1 !important;
+  background: #FFFDF9 !important;
+  color: #1C120A !important;
+  border: 1px solid #D4C5B0 !important;
   border-radius: 8px !important;
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 4px 16px -2px rgba(28, 18, 10, 0.12) !important;
   padding: 0 !important;
 }
 
 .dark .leaflet-popup-content-wrapper {
-  background: #131922 !important;
-  color: #F1F5F9 !important;
-  border: 1px solid #222E3C !important;
+  background: #1E1810 !important;
+  color: #FEF3E2 !important;
+  border: 1px solid #2E2218 !important;
   box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.7) !important;
 }
 
@@ -169,13 +169,13 @@ body.dark {
 }
 
 .leaflet-popup-tip {
-  background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
+  background: #FFFDF9 !important;
+  border: 1px solid #EAE2D8 !important;
 }
 
 .dark .leaflet-popup-tip {
-  background: #131922 !important;
-  border: 1px solid #222E3C !important;
+  background: #1E1810 !important;
+  border: 1px solid #2E2218 !important;
 }
 
 /* Sleek Command Scrollbar */
@@ -187,23 +187,23 @@ body.dark {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #D4C5B0;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #B89880;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #222E3C;
+  background: #2E2218;
   border-radius: 3px;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #3E3020;
 }
 
 /* ═══════════════════════════════════════════
-   Professional Weight Slider
+   Weight Slider
    ═══════════════════════════════════════════ */
 .weight-slider {
   -webkit-appearance: none;
@@ -217,31 +217,28 @@ body.dark {
   position: relative;
 }
 
-/* Track — light mode */
 .weight-slider::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 4px;
-  background: #E2E8F0;
-  border: 1px solid #CBD5E1;
+  background: #EAE2D8;
+  border: 1px solid #D4C5B0;
 }
 .weight-slider::-moz-range-track {
   height: 6px;
   border-radius: 4px;
-  background: #E2E8F0;
-  border: 1px solid #CBD5E1;
+  background: #EAE2D8;
+  border: 1px solid #D4C5B0;
 }
 
-/* Track — dark mode */
 .dark .weight-slider::-webkit-slider-runnable-track {
-  background: #1E2D3D;
-  border-color: #2D4258;
+  background: #261C12;
+  border-color: #3E3020;
 }
 .dark .weight-slider::-moz-range-track {
-  background: #1E2D3D;
-  border-color: #2D4258;
+  background: #261C12;
+  border-color: #3E3020;
 }
 
-/* Thumb — visible handle */
 .weight-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -284,13 +281,12 @@ body.dark {
   cursor: grabbing;
 }
 
-/* Dark thumb stays white with colored border */
 .dark .weight-slider::-webkit-slider-thumb {
-  background: #1E293B;
+  background: #261C12;
   box-shadow: 0 1px 8px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,255,255,0.06);
 }
 .dark .weight-slider::-moz-range-thumb {
-  background: #1E293B;
+  background: #261C12;
 }
 
 /* ═══════════════════════════════════════════

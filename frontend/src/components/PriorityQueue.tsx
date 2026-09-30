@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+﻿import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { 
   IncidentCluster, 
@@ -85,7 +85,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
       default:
         return {
           label: category,
-          className: 'bg-slate-50 dark:bg-[#0C1015] text-slate-800 dark:text-[#94A3B8] border-slate-200 dark:border-[#222E3C]'
+          className: 'bg-slate-50 dark:bg-[#150F0A] text-slate-800 dark:text-[#94A3B8] border-slate-200 dark:border-[#2E2218]'
         };
     }
   };
@@ -186,9 +186,9 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
   ];
 
   return (
-    <div className="h-full flex flex-col bg-white/95 dark:bg-[#131922]/95 backdrop-blur-xl select-none transition-colors">
+    <div className="h-full flex flex-col bg-white/95 dark:bg-[#1E1810]/95 backdrop-blur-xl select-none transition-colors">
       {/* 1. Command Header Bar */}
-      <div className="bg-white/90 dark:bg-[#131922]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-[#222E3C] shrink-0 select-none shadow-2xs z-10 transition-colors">
+      <div className="bg-white/90 dark:bg-[#1E1810]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-[#2E2218] shrink-0 select-none shadow-2xs z-10 transition-colors">
         {/* Title Bar Area */}
         <div className="p-3.5 pb-2.5 space-y-1.5">
           <div className="flex items-center justify-between gap-2">
@@ -210,7 +210,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                 <button
                   type="button"
                   onClick={onToggleCollapse}
-                  className="hidden md:flex w-7 h-7 items-center justify-center text-slate-400 hover:text-slate-700 dark:text-[#94A3B8] dark:hover:text-[#F1F5F9] rounded-md hover:bg-slate-100 dark:hover:bg-[#1A232F] transition-colors cursor-pointer"
+                  className="hidden md:flex w-7 h-7 items-center justify-center text-slate-400 hover:text-slate-700 dark:text-[#94A3B8] dark:hover:text-[#F1F5F9] rounded-md hover:bg-slate-100 dark:hover:bg-[#261C12] transition-colors cursor-pointer"
                   title="Collapse Priority Queue (⌘B or ])"
                   aria-label="Collapse priority queue"
                 >
@@ -224,7 +224,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
             <span>
               <strong className="text-slate-800 dark:text-[#F1F5F9] font-semibold">{activeCount}</strong> Active Hotspots
             </span>
-            <span className="text-slate-300 dark:text-[#222E3C]">·</span>
+            <span className="text-slate-300 dark:text-[#2E2218]">·</span>
             <span className={slaRiskCount > 0 ? 'text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1' : 'text-slate-600 dark:text-[#94A3B8]'}>
               {slaRiskCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse"></span>}
               {slaRiskCount} SLA Risk (&lt;6h)
@@ -241,7 +241,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
               placeholder="Filter by ward, street, source (Press '/' to focus)..."
-              className="w-full min-h-[36px] bg-slate-100/80 dark:bg-[#0C1015] hover:bg-slate-100 dark:hover:bg-[#1A232F] focus:bg-white dark:focus:bg-[#131922] text-xs text-slate-900 dark:text-[#F1F5F9] placeholder:text-slate-400 dark:placeholder:text-[#64748B] pl-8.5 pr-8 py-1.5 rounded-lg border border-slate-200/70 dark:border-[#222E3C] focus:border-emerald-500 dark:focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15 focus:outline-none transition-all font-sans"
+              className="w-full min-h-[36px] bg-slate-100/80 dark:bg-[#150F0A] hover:bg-slate-100 dark:hover:bg-[#261C12] focus:bg-white dark:focus:bg-[#1E1810] text-xs text-slate-900 dark:text-[#F1F5F9] placeholder:text-slate-400 dark:placeholder:text-[#64748B] pl-8.5 pr-8 py-1.5 rounded-lg border border-slate-200/70 dark:border-[#2E2218] focus:border-emerald-500 dark:focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15 focus:outline-none transition-all font-sans"
             />
             {searchQuery ? (
               <motion.button
@@ -251,13 +251,13 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                 whileTap={{ scale: 0.85 }}
                 type="button"
                 onClick={() => onSearchChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-slate-300 dark:bg-[#222E3C] hover:bg-slate-400 dark:hover:bg-[#324255] text-white flex items-center justify-center transition-colors cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-slate-300 dark:bg-[#2E2218] hover:bg-slate-400 dark:hover:bg-[#324255] text-white flex items-center justify-center transition-colors cursor-pointer"
                 title="Clear search"
               >
                 <X className="w-2.5 h-2.5" />
               </motion.button>
             ) : (
-              <kbd className="hidden group-hover:inline lg:inline absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-[#64748B] font-mono bg-white dark:bg-[#0C1015] px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#222E3C] pointer-events-none">
+              <kbd className="hidden group-hover:inline lg:inline absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-[#64748B] font-mono bg-white dark:bg-[#150F0A] px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#2E2218] pointer-events-none">
                 /
               </kbd>
             )}
@@ -268,7 +268,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
         <div className="px-3.5 pb-2">
           <div 
             onMouseLeave={() => setHoveredCategory(null)}
-            className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-[#0C1015] rounded-lg border border-slate-200/70 dark:border-[#222E3C] overflow-x-auto text-[11px]"
+            className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-[#150F0A] rounded-lg border border-slate-200/70 dark:border-[#2E2218] overflow-x-auto text-[11px]"
           >
             {categoryOptions.map(cat => {
               const isActive = filterCategory === cat.id;
@@ -288,7 +288,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                   {isActive && (
                     <motion.div
                       layoutId="activeCategoryPill"
-                      className="absolute inset-0 bg-white dark:bg-[#1A232F] rounded-md shadow-xs border border-slate-200/80 dark:border-[#222E3C] -z-10"
+                      className="absolute inset-0 bg-white dark:bg-[#261C12] rounded-md shadow-xs border border-slate-200/80 dark:border-[#2E2218] -z-10"
                       transition={{ type: 'spring', stiffness: 450, damping: 32 }}
                     />
                   )}
@@ -296,7 +296,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                   {!isActive && isHovered && (
                     <motion.div
                       layoutId="hoverCategoryMorph"
-                      className="absolute inset-0 bg-slate-200/60 dark:bg-[#1A232F]/60 rounded-md -z-10"
+                      className="absolute inset-0 bg-slate-200/60 dark:bg-[#261C12]/60 rounded-md -z-10"
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                     />
                   )}
@@ -314,7 +314,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
         </div>
 
         {/* Sort Controls Bar */}
-        <div className="px-3.5 py-1.5 border-t border-slate-100 dark:border-[#222E3C] flex items-center justify-between text-[11px] font-mono bg-slate-50/60 dark:bg-[#0C1015]/60">
+        <div className="px-3.5 py-1.5 border-t border-slate-100 dark:border-[#2E2218] flex items-center justify-between text-[11px] font-mono bg-slate-50/60 dark:bg-[#150F0A]/60">
           <div className="flex items-center gap-1.5 text-slate-500 dark:text-[#94A3B8]">
             <span className="font-semibold text-slate-800 dark:text-[#F1F5F9]">{sortedClusters.length}</span>
             <span>incidents sorted by</span>
@@ -322,7 +322,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
 
           <div 
             onMouseLeave={() => setHoveredSort(null)}
-            className="flex items-center gap-1 p-0.5 bg-slate-200/50 dark:bg-[#0C1015] rounded-md border border-slate-200/60 dark:border-[#222E3C]"
+            className="flex items-center gap-1 p-0.5 bg-slate-200/50 dark:bg-[#150F0A] rounded-md border border-slate-200/60 dark:border-[#2E2218]"
           >
             {sortOptions.map(option => {
               const isActive = sortBy === option.id;
@@ -343,7 +343,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                   {isActive && (
                     <motion.div
                       layoutId="activeSortPill"
-                      className="absolute inset-0 bg-white dark:bg-[#1A232F] rounded shadow-2xs border border-slate-200/70 dark:border-[#222E3C]"
+                      className="absolute inset-0 bg-white dark:bg-[#261C12] rounded shadow-2xs border border-slate-200/70 dark:border-[#2E2218]"
                       transition={{ type: 'spring', stiffness: 450, damping: 32 }}
                     />
                   )}
@@ -351,7 +351,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                   {!isActive && isHovered && (
                     <motion.div
                       layoutId="hoverSortMorph"
-                      className="absolute inset-0 bg-slate-200/70 dark:bg-[#1A232F]/50 rounded"
+                      className="absolute inset-0 bg-slate-200/70 dark:bg-[#261C12]/50 rounded"
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                     />
                   )}
@@ -370,7 +370,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-8 text-center text-slate-400 dark:text-[#64748B] text-xs font-mono bg-white dark:bg-[#131922] rounded-xl border border-slate-200 dark:border-[#222E3C] shadow-2xs"
+            className="p-8 text-center text-slate-400 dark:text-[#64748B] text-xs font-mono bg-white dark:bg-[#1E1810] rounded-xl border border-slate-200 dark:border-[#2E2218] shadow-2xs"
           >
             No incident clusters match filter criteria.
           </motion.div>
@@ -404,7 +404,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                   className={`relative rounded-xl p-3.5 transition-colors cursor-pointer select-none ${
                     isSelected
                       ? 'bg-emerald-50/40 dark:bg-[#18252C] border border-emerald-500/80 dark:border-emerald-500 shadow-md ring-1 ring-emerald-500/20'
-                      : 'bg-white dark:bg-[#131922] border border-slate-200/90 dark:border-[#222E3C] hover:border-slate-300 dark:hover:border-[#303E50] hover:bg-slate-50/50 dark:hover:bg-[#18212B] shadow-2xs'
+                      : 'bg-white dark:bg-[#1E1810] border border-slate-200/90 dark:border-[#2E2218] hover:border-slate-300 dark:hover:border-[#303E50] hover:bg-slate-50/50 dark:hover:bg-[#18212B] shadow-2xs'
                   }`}
                 >
                   {/* Tactile Selection Bar */}
@@ -441,7 +441,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                             {cluster.hours_remaining.toFixed(1)}h left
                           </span>
                         ) : (
-                          <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#0C1015] text-slate-700 dark:text-[#94A3B8] border border-slate-200/80 dark:border-[#222E3C] flex items-center gap-1.5 whitespace-nowrap">
+                          <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#150F0A] text-slate-700 dark:text-[#94A3B8] border border-slate-200/80 dark:border-[#2E2218] flex items-center gap-1.5 whitespace-nowrap">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-[#64748B]"></span>
                             {cluster.hours_remaining.toFixed(1)}h left
                           </span>
@@ -452,17 +452,17 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                     {/* Card Subtitle Row: Ward location + Semantic Category Chip */}
                     <div className="text-[11px] text-slate-600 dark:text-[#94A3B8] flex items-center gap-2">
                       <span className="font-medium text-slate-700 dark:text-[#F1F5F9]">{cluster.ward}</span>
-                      <span className="text-slate-300 dark:text-[#222E3C]">•</span>
+                      <span className="text-slate-300 dark:text-[#2E2218]">•</span>
                       <span className={`text-[10px] px-1.5 py-0.2 rounded-md border font-medium ${categoryBadge.className}`}>
                         {categoryBadge.label}
                       </span>
                     </div>
 
                     {/* Card Telemetry Row (Tabular Format) */}
-                    <div className="font-mono text-[11px] text-slate-600 dark:text-[#94A3B8] flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100 dark:border-[#222E3C]">
+                    <div className="font-mono text-[11px] text-slate-600 dark:text-[#94A3B8] flex flex-wrap items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100 dark:border-[#2E2218]">
                       <div className="flex items-center gap-2">
                         <span className="text-slate-700 dark:text-[#F1F5F9] font-medium tabular-nums">{cluster.complaint_count} citizen reports</span>
-                        <span className="text-slate-300 dark:text-[#222E3C]">|</span>
+                        <span className="text-slate-300 dark:text-[#2E2218]">|</span>
                         <span className="text-amber-800 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/70 px-1.5 py-0.5 rounded border border-amber-200/60 dark:border-amber-800/80 tabular-nums">
                           AQI {cluster.avg_aqi}
                         </span>
@@ -509,9 +509,9 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                           onClick={e => e.stopPropagation()}
                           className="overflow-hidden"
                         >
-                          <div className="mt-2 p-3 bg-slate-50/90 dark:bg-[#0C1015] rounded-lg border border-slate-200 dark:border-[#222E3C] text-xs space-y-2.5 shadow-2xs">
+                          <div className="mt-2 p-3 bg-slate-50/90 dark:bg-[#150F0A] rounded-lg border border-slate-200 dark:border-[#2E2218] text-xs space-y-2.5 shadow-2xs">
                             {/* Formula Headline */}
-                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#222E3C] pb-1.5">
+                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#2E2218] pb-1.5">
                               <div>
                                 <div className="text-[9px] font-mono uppercase tracking-wider text-slate-500 dark:text-[#94A3B8] font-bold">
                                   Statutory Urgency Formula (Air Act §31A)
@@ -530,7 +530,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
 
                             {/* Proportional Weight Bar */}
                             <div className="space-y-1">
-                              <div className="h-2 w-full bg-slate-200/80 dark:bg-[#1A232F] rounded-full overflow-hidden flex">
+                              <div className="h-2 w-full bg-slate-200/80 dark:bg-[#261C12] rounded-full overflow-hidden flex">
                                 <motion.div
                                   initial={{ width: 0 }}
                                   animate={{ width: `${Math.min(100, volumePts)}%` }}
@@ -569,22 +569,22 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                             </div>
 
                             {/* Breakdown Rows */}
-                            <div className="space-y-1 font-mono text-[10px] text-slate-600 dark:text-[#94A3B8] bg-white dark:bg-[#131922] p-2.5 rounded-md border border-slate-200 dark:border-[#222E3C]">
-                              <div className="flex justify-between items-baseline gap-1 pb-1 border-b border-slate-100 dark:border-[#222E3C]">
+                            <div className="space-y-1 font-mono text-[10px] text-slate-600 dark:text-[#94A3B8] bg-white dark:bg-[#1E1810] p-2.5 rounded-md border border-slate-200 dark:border-[#2E2218]">
+                              <div className="flex justify-between items-baseline gap-1 pb-1 border-b border-slate-100 dark:border-[#2E2218]">
                                 <span className="font-semibold text-slate-800 dark:text-[#F1F5F9] shrink-0">• Volume:</span>
                                 <span className="text-slate-600 dark:text-[#94A3B8] font-sans text-right truncate">
                                   {cluster.complaint_count} citizen reports
                                 </span>
                               </div>
 
-                              <div className="flex justify-between items-baseline gap-1 pb-1 border-b border-slate-100 dark:border-[#222E3C]">
+                              <div className="flex justify-between items-baseline gap-1 pb-1 border-b border-slate-100 dark:border-[#2E2218]">
                                 <span className="font-semibold text-slate-800 dark:text-[#F1F5F9] shrink-0">• Severity:</span>
                                 <span className="text-slate-600 dark:text-[#94A3B8] font-sans text-right truncate">
                                   {getCategoryBadge(cluster.category).label}
                                 </span>
                               </div>
 
-                              <div className="flex justify-between items-baseline gap-1 pb-1 border-b border-slate-100 dark:border-[#222E3C]">
+                              <div className="flex justify-between items-baseline gap-1 pb-1 border-b border-slate-100 dark:border-[#2E2218]">
                                 <span className="font-semibold text-slate-800 dark:text-[#F1F5F9] shrink-0">• SLA Risk:</span>
                                 <span className="text-slate-600 dark:text-[#94A3B8] font-sans text-right truncate">
                                   {(24 - cluster.hours_remaining).toFixed(1)}h elapsed in 24h
@@ -631,7 +631,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                                   exit={{ opacity: 0, height: 0 }}
                                   transition={{ type: 'spring', stiffness: 350, damping: 28 }}
                                   onSubmit={e => handleApplyOverride(e, cluster.cluster_id)}
-                                  className="p-2.5 bg-white dark:bg-[#131922] rounded-md border border-slate-200 dark:border-[#222E3C] text-xs space-y-2 shadow-2xs overflow-hidden"
+                                  className="p-2.5 bg-white dark:bg-[#1E1810] rounded-md border border-slate-200 dark:border-[#2E2218] text-xs space-y-2 shadow-2xs overflow-hidden"
                                 >
                                   <div className="grid grid-cols-2 gap-2">
                                     <div>
@@ -641,7 +641,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                                       <select
                                         value={tempOverridePts}
                                         onChange={e => setTempOverridePts(Number(e.target.value))}
-                                        className="w-full bg-slate-50 dark:bg-[#0C1015] border border-slate-300 dark:border-[#222E3C] rounded px-1.5 py-1 text-xs text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:border-emerald-600"
+                                        className="w-full bg-slate-50 dark:bg-[#150F0A] border border-slate-300 dark:border-[#2E2218] rounded px-1.5 py-1 text-xs text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:border-emerald-600"
                                       >
                                         <option value={20}>+20 pts (Critical Escalation)</option>
                                         <option value={10}>+10 pts (Elevate Priority)</option>
@@ -658,7 +658,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                                       <select
                                         value={tempOverrideReason}
                                         onChange={e => setTempOverrideReason(e.target.value)}
-                                        className="w-full bg-slate-50 dark:bg-[#0C1015] border border-slate-300 dark:border-[#222E3C] rounded px-1.5 py-1 text-xs text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:border-emerald-600"
+                                        className="w-full bg-slate-50 dark:bg-[#150F0A] border border-slate-300 dark:border-[#2E2218] rounded px-1.5 py-1 text-xs text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:border-emerald-600"
                                       >
                                         <option value="Sensitive Receptors (School / Hospital Zone)">
                                           Sensitive Receptors (School/Hospital)
@@ -680,7 +680,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => setOverrideFormId(null)}
-                                      className="px-2 py-0.5 rounded text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#1A232F] text-[11px]"
+                                      className="px-2 py-0.5 rounded text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#261C12] text-[11px]"
                                     >
                                       Cancel
                                     </button>
@@ -700,7 +700,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                     </AnimatePresence>
 
                     {/* Card Action Footer */}
-                    <div className="pt-2 border-t border-slate-100 dark:border-[#222E3C] flex items-center justify-between gap-2">
+                    <div className="pt-2 border-t border-slate-100 dark:border-[#2E2218] flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
                         {/* Administrative directive button */}
                         <motion.button
@@ -757,7 +757,7 @@ export const PriorityQueue: React.FC<PriorityQueueProps> = ({
                               e.stopPropagation();
                               onOpenDetail(cluster.cluster_id);
                             }}
-                            className="text-[11px] font-medium text-slate-700 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F1F5F9] bg-slate-100 dark:bg-[#1A232F] hover:bg-slate-200 dark:hover:bg-[#222E3C] border border-slate-200 dark:border-[#222E3C] px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 cursor-pointer font-sans shadow-2xs"
+                            className="text-[11px] font-medium text-slate-700 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F1F5F9] bg-slate-100 dark:bg-[#261C12] hover:bg-slate-200 dark:hover:bg-[#2E2218] border border-slate-200 dark:border-[#2E2218] px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 cursor-pointer font-sans shadow-2xs"
                           >
                             <span>Inspect</span>
                             <ExternalLink className="w-2.5 h-2.5 text-slate-500 dark:text-[#94A3B8]" />

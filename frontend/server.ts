@@ -51,7 +51,7 @@ Generate a concise, statutory-grade enforcement directive in valid JSON format w
 Respond ONLY with raw valid JSON without markdown fences.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.0-flash',
       contents: prompt,
     });
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   IncidentCluster, 
@@ -63,7 +63,8 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
   onOpenAdminModal,
   onOpenResolveModal
 }) => {
-  const [showExplainability, setShowExplainability] = useState(true);
+  const [showExplainability, setShowExplainability] = useState(false);
+  const [showComplaints, setShowComplaints] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Recommendation generation state
@@ -176,9 +177,9 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-[#131922] text-slate-900 dark:text-[#F1F5F9] overflow-y-auto select-none transition-colors">
+    <div className="h-full flex flex-col bg-white dark:bg-[#1E1810] text-slate-900 dark:text-[#F1F5F9] overflow-y-auto select-none transition-colors">
       {/* 1. Header with Back Button */}
-      <div className="p-4 border-b border-slate-200 dark:border-[#222E3C] bg-white dark:bg-[#131922] sticky top-0 z-10 space-y-2 transition-colors">
+      <div className="p-4 border-b border-slate-200 dark:border-[#2E2218] bg-white dark:bg-[#1E1810] sticky top-0 z-10 space-y-2 transition-colors">
         <div className="flex items-center justify-between">
           <button
             type="button"
@@ -190,11 +191,11 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
           </button>
 
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-[#0C1015] text-slate-700 dark:text-[#94A3B8] border border-slate-200 dark:border-[#222E3C]">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-[#150F0A] text-slate-700 dark:text-[#94A3B8] border border-slate-200 dark:border-[#2E2218]">
               {cluster.cluster_id}
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80">
-              Ward: {cluster.ward}
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+              {cluster.ward}
             </span>
           </div>
         </div>
@@ -227,7 +228,7 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
           <div className={`p-3 rounded border space-y-1 ${
             isCritical && !isResolved 
               ? 'bg-rose-50/60 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60' 
-              : 'bg-slate-50 dark:bg-[#0C1015] border-slate-200 dark:border-[#222E3C]'
+              : 'bg-slate-50 dark:bg-[#150F0A] border-slate-200 dark:border-[#2E2218]'
           }`}>
             <div className="text-[10px] font-mono text-slate-500 dark:text-[#94A3B8] flex items-center justify-between">
               <span>SLA WINDOW</span>
@@ -260,30 +261,30 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
           </div>
 
           {/* Volume & Statutory Score Card */}
-          <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/40 rounded border border-emerald-200/80 dark:border-emerald-900/60 space-y-1">
-            <div className="text-[10px] font-mono text-emerald-800 dark:text-emerald-400 font-semibold">TRIAGE SCORE</div>
-            <div className="text-sm font-mono font-bold text-emerald-900 dark:text-emerald-300">
-              {cluster.priority_score} <span className="text-xs text-emerald-600 dark:text-emerald-400 font-normal">/100</span>
+          <div className="p-3 bg-amber-50/50 dark:bg-amber-950/40 rounded border border-amber-200/80 dark:border-amber-900/60 space-y-1">
+            <div className="text-[10px] font-mono text-amber-800 dark:text-amber-400 font-semibold">TRIAGE SCORE</div>
+            <div className="text-sm font-mono font-bold text-amber-900 dark:text-amber-300">
+              {cluster.priority_score} <span className="text-xs text-amber-600 dark:text-amber-400 font-normal">/100</span>
             </div>
-            <p className="text-[10px] text-emerald-700/90 dark:text-emerald-400/90 font-mono">
+            <p className="text-[10px] text-amber-700/90 dark:text-amber-400/90 font-mono">
               {cluster.complaint_count} Citizen Logs
             </p>
           </div>
         </div>
 
         {/* Priority Score Breakdown (Statutory Triage Score Weights) */}
-        <div className="p-3.5 bg-slate-50 dark:bg-[#0C1015] rounded-lg border border-slate-200 dark:border-[#222E3C] space-y-2">
+        <div className="p-3.5 bg-slate-50 dark:bg-[#150F0A] rounded-lg border border-slate-200 dark:border-[#2E2218] space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Scale className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-              <h4 className="text-xs font-bold text-slate-900 dark:text-[#F1F5F9] font-mono">Statutory Score Weights (Rule 31A)</h4>
+              <Scale className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
+              <h4 className="text-xs font-bold text-slate-900 dark:text-[#F1F5F9] font-mono">Score Breakdown</h4>
             </div>
             <button
               type="button"
               onClick={() => setShowExplainability(prev => !prev)}
-              className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-medium flex items-center gap-1 cursor-pointer font-mono"
+              className="text-[11px] text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300 font-medium flex items-center gap-1 cursor-pointer font-mono"
             >
-              <span>{showExplainability ? 'Hide' : 'Details'}</span>
+              <span>{showExplainability ? 'Hide' : 'Show'}</span>
               {showExplainability ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
           </div>
@@ -298,19 +299,19 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                 className="space-y-2 overflow-hidden"
               >
                 <div className="grid grid-cols-2 gap-2 text-[10px] font-mono text-slate-600 dark:text-[#94A3B8]">
-                  <div className="p-2 bg-white dark:bg-[#131922] rounded border border-slate-200 dark:border-[#222E3C] flex justify-between">
+                  <div className="p-2 bg-white dark:bg-[#1E1810] rounded border border-slate-200 dark:border-[#2E2218] flex justify-between">
                     <span>Complaint Spike:</span>
-                    <span className="font-bold text-emerald-900 dark:text-emerald-300">+{cluster.statutory_weights.complaint_spike} pts</span>
+                    <span className="font-bold text-amber-900 dark:text-amber-300">+{cluster.statutory_weights.complaint_spike} pts</span>
                   </div>
-                  <div className="p-2 bg-white dark:bg-[#131922] rounded border border-slate-200 dark:border-[#222E3C] flex justify-between">
+                  <div className="p-2 bg-white dark:bg-[#1E1810] rounded border border-slate-200 dark:border-[#2E2218] flex justify-between">
                     <span>Category Source:</span>
                     <span className="font-bold text-amber-900 dark:text-amber-300">+{cluster.statutory_weights.high_pollutant_source} pts</span>
                   </div>
-                  <div className="p-2 bg-white dark:bg-[#131922] rounded border border-slate-200 dark:border-[#222E3C] flex justify-between">
+                  <div className="p-2 bg-white dark:bg-[#1E1810] rounded border border-slate-200 dark:border-[#2E2218] flex justify-between">
                     <span>SLA Urgency:</span>
                     <span className="font-bold text-rose-900 dark:text-rose-300">+{cluster.statutory_weights.sla_urgency} pts</span>
                   </div>
-                  <div className="p-2 bg-white dark:bg-[#131922] rounded border border-slate-200 dark:border-[#222E3C] flex justify-between">
+                  <div className="p-2 bg-white dark:bg-[#1E1810] rounded border border-slate-200 dark:border-[#2E2218] flex justify-between">
                     <span>Ambient Delta:</span>
                     <span className="font-bold text-sky-900 dark:text-sky-300">+{cluster.statutory_weights.ambient_delta} pts</span>
                   </div>
@@ -325,46 +326,40 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
         </div>
 
         {/* Active Dominant Pollution Source */}
-        <div className="p-3 bg-slate-50 dark:bg-[#0C1015] rounded-lg border border-slate-200 dark:border-[#222E3C] text-xs space-y-1.5">
+        <div className="p-3 bg-slate-50 dark:bg-[#150F0A] rounded-lg border border-slate-200 dark:border-[#2E2218] text-xs space-y-1.5">
           <div className="flex items-center justify-between">
             <span className="font-bold text-slate-900 dark:text-[#F1F5F9] flex items-center gap-1.5 text-xs">
               {renderCategoryIcon(cluster.category)}
               <span>Identified Source</span>
             </span>
-            <span className="font-mono text-[10px] px-1.5 py-0.5 bg-white dark:bg-[#131922] border border-slate-200 dark:border-[#222E3C] rounded text-slate-700 dark:text-[#94A3B8] font-medium">
+            <span className="font-mono text-[10px] px-1.5 py-0.5 bg-white dark:bg-[#1E1810] border border-slate-200 dark:border-[#2E2218] rounded text-slate-700 dark:text-[#94A3B8] font-medium">
               {formatCategoryName(cluster.category)}
             </span>
           </div>
 
-          <div className="p-2 bg-white dark:bg-[#131922] rounded border border-slate-200 dark:border-[#222E3C] space-y-1 text-xs">
-            <div className="flex justify-between items-start">
-              <span className="text-slate-500 dark:text-[#94A3B8]">Vector:</span>
+          <div className="p-2 bg-white dark:bg-[#1E1810] rounded border border-slate-200 dark:border-[#2E2218] text-xs">
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-slate-500 dark:text-[#94A3B8] shrink-0">Source:</span>
               <span className="text-slate-900 dark:text-[#F1F5F9] font-semibold text-right">{cluster.primary_source}</span>
-            </div>
-            <div className="flex justify-between items-center pt-1 border-t border-slate-100 dark:border-[#222E3C] font-mono text-[10px]">
-              <span className="text-slate-500 dark:text-[#94A3B8]">GPS Coordinates:</span>
-              <span className="text-slate-700 dark:text-[#F1F5F9]">
-                {cluster.center[0].toFixed(4)}° N, {cluster.center[1].toFixed(4)}° E
-              </span>
             </div>
           </div>
         </div>
 
         {/* 2. "Generate Action Recommendation" Workflow */}
-        <div className="bg-white dark:bg-[#131922] rounded-lg border border-slate-200 dark:border-[#222E3C] overflow-hidden shadow-2xs">
+        <div className="bg-white dark:bg-[#1E1810] rounded-lg border border-slate-200 dark:border-[#2E2218] overflow-hidden shadow-2xs">
           {/* Header Strip with Action Trigger */}
-          <div className="p-3 bg-slate-50 dark:bg-[#0C1015] border-b border-slate-200 dark:border-[#222E3C] flex flex-wrap items-center justify-between gap-2">
+          <div className="p-3 bg-slate-50 dark:bg-[#150F0A] border-b border-slate-200 dark:border-[#2E2218] flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <h3 className="text-xs font-bold text-slate-900 dark:text-[#F1F5F9] font-mono">Statutory AI Enforcement Protocol</h3>
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <h3 className="text-xs font-bold text-slate-900 dark:text-[#F1F5F9] font-mono">AI Enforcement Directive</h3>
             </div>
-            
+
             <button
               type="button"
               data-tour="generate-directive-btn"
               onClick={handleGenerateRecommendation}
               disabled={isGenerating}
-              className="px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer touch-manipulation"
+              className="px-3 py-1.5 rounded bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 disabled:opacity-50 text-white text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer touch-manipulation"
             >
               <Sparkles className={`w-3 h-3 ${isGenerating ? 'animate-spin' : ''}`} />
               <span>
@@ -379,32 +374,32 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
 
           {/* Loading Skeleton during AI Call */}
           {isGenerating && (
-            <div className="p-4 space-y-2.5 animate-pulse bg-slate-50/50 dark:bg-[#0C1015]/50">
+            <div className="p-4 space-y-2.5 animate-pulse bg-slate-50/50 dark:bg-[#150F0A]/50">
               <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-[#94A3B8]">
-                <RotateCw className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
+                <RotateCw className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />
                 <span>Generating statutory Section 31A protocol...</span>
               </div>
               
-              <div className="p-2.5 bg-white dark:bg-[#131922] rounded border border-slate-200 dark:border-[#222E3C] space-y-1.5">
-                <div className="h-2.5 w-1/4 bg-slate-200 dark:bg-[#222E3C] rounded"></div>
-                <div className="h-3.5 w-3/4 bg-slate-200 dark:bg-[#222E3C] rounded"></div>
+              <div className="p-2.5 bg-white dark:bg-[#1E1810] rounded border border-slate-200 dark:border-[#2E2218] space-y-1.5">
+                <div className="h-2.5 w-1/4 bg-slate-200 dark:bg-[#2E2218] rounded"></div>
+                <div className="h-3.5 w-3/4 bg-slate-200 dark:bg-[#2E2218] rounded"></div>
               </div>
             </div>
           )}
 
           {/* Structured, Editable Action Card */}
           {!isGenerating && recommendation && (
-            <div className="p-3.5 space-y-3 bg-white dark:bg-[#131922] text-xs">
-              <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-[#222E3C]">
+            <div className="p-3.5 space-y-3 bg-white dark:bg-[#1E1810] text-xs">
+              <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-[#2E2218]">
                 <span className="font-mono text-[10px] text-slate-500 dark:text-[#94A3B8] flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>
-                  Statutory Order Draft
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400"></span>
+                  AI Directive Draft
                 </span>
 
                 <button
                   type="button"
                   onClick={() => setIsEditing(prev => !prev)}
-                  className="px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F1F5F9] flex items-center gap-1 rounded hover:bg-slate-100 dark:hover:bg-[#1A232F] transition-colors cursor-pointer"
+                  className="px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F1F5F9] flex items-center gap-1 rounded hover:bg-slate-100 dark:hover:bg-[#261C12] transition-colors cursor-pointer"
                 >
                   {isEditing ? (
                     <>
@@ -430,11 +425,11 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                     type="text"
                     value={editedAgency}
                     onChange={e => setEditedAgency(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#0C1015] border border-slate-300 dark:border-[#222E3C] rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-[#F1F5F9] font-medium focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#131922]"
+                    className="w-full bg-slate-50 dark:bg-[#150F0A] border border-slate-300 dark:border-[#2E2218] rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-[#F1F5F9] font-medium focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#1E1810]"
                   />
                 ) : (
-                  <div className="p-2 bg-slate-50 dark:bg-[#0C1015] rounded border border-slate-200 dark:border-[#222E3C] font-medium text-slate-900 dark:text-[#F1F5F9] flex items-center gap-2">
-                    <Building2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
+                  <div className="p-2 bg-slate-50 dark:bg-[#150F0A] rounded border border-slate-200 dark:border-[#2E2218] font-medium text-slate-900 dark:text-[#F1F5F9] flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 shrink-0" />
                     <span>{editedAgency || recommendation.targetAgency}</span>
                   </div>
                 )}
@@ -450,10 +445,10 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                     rows={3}
                     value={editedDirective}
                     onChange={e => setEditedDirective(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#0C1015] border border-slate-300 dark:border-[#222E3C] rounded p-2 text-xs text-slate-900 dark:text-[#F1F5F9] font-sans focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#131922] leading-relaxed"
+                    className="w-full bg-slate-50 dark:bg-[#150F0A] border border-slate-300 dark:border-[#2E2218] rounded p-2 text-xs text-slate-900 dark:text-[#F1F5F9] font-sans focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#1E1810] leading-relaxed"
                   />
                 ) : (
-                  <div className="p-2 bg-slate-50 dark:bg-[#0C1015] rounded border border-slate-200 dark:border-[#222E3C] text-slate-800 dark:text-[#F1F5F9] leading-relaxed text-xs">
+                  <div className="p-2 bg-slate-50 dark:bg-[#150F0A] rounded border border-slate-200 dark:border-[#2E2218] text-slate-800 dark:text-[#F1F5F9] leading-relaxed text-xs">
                     {editedDirective || recommendation.directive}
                   </div>
                 )}
@@ -469,11 +464,11 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                     type="text"
                     value={editedProvision}
                     onChange={e => setEditedProvision(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#0C1015] border border-slate-300 dark:border-[#222E3C] rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-[#F1F5F9] font-mono focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#131922]"
+                    className="w-full bg-slate-50 dark:bg-[#150F0A] border border-slate-300 dark:border-[#2E2218] rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-[#F1F5F9] font-mono focus:outline-none focus:border-emerald-600 focus:bg-white dark:focus:bg-[#1E1810]"
                   />
                 ) : (
-                  <div className="p-2 bg-emerald-50/50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded font-mono text-[11px] text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
-                    <ShieldAlert className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
+                  <div className="p-2 bg-amber-50/50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 rounded font-mono text-[11px] text-amber-900 dark:text-amber-300 flex items-center gap-2">
+                    <ShieldAlert className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 shrink-0" />
                     <span className="font-semibold">{editedProvision || recommendation.legalProvision}</span>
                   </div>
                 )}
@@ -481,7 +476,7 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
 
               {/* Rationale & Equipment tags */}
               {recommendation.rationale && (
-                <div className="p-2 bg-slate-50 dark:bg-[#0C1015] rounded border border-slate-200 dark:border-[#222E3C] text-[11px] text-slate-600 dark:text-[#94A3B8] leading-relaxed font-sans">
+                <div className="p-2 bg-slate-50 dark:bg-[#150F0A] rounded border border-slate-200 dark:border-[#2E2218] text-[11px] text-slate-600 dark:text-[#94A3B8] leading-relaxed font-sans">
                   <span className="font-medium text-slate-800 dark:text-[#F1F5F9]">Operational Assessment: </span>
                   {recommendation.rationale}
                 </div>
@@ -496,7 +491,7 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                     {recommendation.suggestedEquipment.map((eq, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded text-[10px] font-mono font-medium"
+                        className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 rounded text-[10px] font-mono font-medium"
                       >
                         {eq}
                       </span>
@@ -510,7 +505,7 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                 <button
                   type="button"
                   onClick={handleApplyToDirective}
-                  className="w-full px-3 py-2 rounded-md bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer touch-manipulation"
+                  className="w-full px-3 py-2 rounded-md bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 text-white text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer touch-manipulation"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Apply to Enforcement Directive</span>
@@ -538,7 +533,7 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
 
             <p className="text-emerald-900 dark:text-emerald-300 font-medium text-xs">{cluster.resolution.action_summary}</p>
 
-            <div className="grid grid-cols-3 gap-2 font-mono text-[10px] bg-white dark:bg-[#0C1015] p-2.5 rounded border border-emerald-200/80 dark:border-emerald-800/80">
+            <div className="grid grid-cols-3 gap-2 font-mono text-[10px] bg-white dark:bg-[#150F0A] p-2.5 rounded border border-emerald-200/80 dark:border-emerald-800/80">
               <div>
                 <span className="text-slate-500 dark:text-[#94A3B8] block text-[9px]">Pre-AQI:</span>
                 <span className="font-bold text-slate-800 dark:text-[#F1F5F9]">{cluster.resolution.pre_intervention_aqi}</span>
@@ -565,7 +560,7 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
             type="button"
             onClick={() => onOpenAdminModal(cluster)}
             disabled={isResolved}
-            className="px-3 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer touch-manipulation select-none"
+            className="px-3 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 disabled:opacity-50 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer touch-manipulation select-none"
           >
             <FileText className="w-3.5 h-3.5" />
             <span>{cluster.admin_action_label}</span>
@@ -593,8 +588,8 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
             disabled={isResolved}
             className={`px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation border select-none ${
               isResolved 
-                ? 'bg-slate-100 dark:bg-[#0C1015] text-slate-400 dark:text-[#64748B] border-slate-200 dark:border-[#222E3C] cursor-not-allowed'
-                : 'bg-emerald-50 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/80 shadow-2xs'
+                ? 'bg-slate-100 dark:bg-[#150F0A] text-slate-400 dark:text-[#64748B] border-slate-200 dark:border-[#2E2218] cursor-not-allowed'
+                : 'bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800/60 shadow-2xs'
             }`}
           >
             <CheckCircle2 className={`w-3.5 h-3.5 ${isResolved ? 'text-slate-400 dark:text-[#64748B]' : 'text-emerald-700 dark:text-emerald-400'}`} />
@@ -602,22 +597,36 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
           </motion.button>
         </div>
 
-        {/* 3. Grouped Complaints List */}
-        <div className="space-y-2 pt-1 border-t border-slate-200 dark:border-[#222E3C]">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-900 dark:text-[#F1F5F9] font-mono">
-              Grouped Citizen Complaints ({cluster.complaints.length})
+        {/* 3. Grouped Complaints List (collapsible) */}
+        <div className="pt-1 border-t border-slate-200 dark:border-[#2E2218]">
+          <button
+            type="button"
+            onClick={() => setShowComplaints(prev => !prev)}
+            className="w-full flex items-center justify-between text-xs py-1 cursor-pointer"
+          >
+            <span className="font-bold text-slate-900 dark:text-[#F1F5F9] font-mono flex items-center gap-1.5">
+              Citizen Complaints ({cluster.complaints.length})
             </span>
-            <span className="text-[10px] font-mono text-slate-400 dark:text-[#64748B]">
-              Spatial Density Clustered
+            <span className="flex items-center gap-1 text-[11px] font-mono text-slate-500 dark:text-[#94A3B8]">
+              {showComplaints ? 'Hide' : 'Show'}
+              {showComplaints ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </span>
-          </div>
+          </button>
 
-          <div className="space-y-1.5 max-h-[350px] overflow-y-auto pr-0.5">
+          <AnimatePresence>
+          {showComplaints && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            className="overflow-hidden"
+          >
+          <div className="space-y-1.5 max-h-[300px] overflow-y-auto pr-0.5 mt-2">
             {cluster.complaints.map(complaint => (
               <div
                 key={complaint.id}
-                className="p-2.5 bg-slate-50 dark:bg-[#0C1015] rounded-lg border border-slate-200 dark:border-[#222E3C] text-xs space-y-1 hover:border-slate-300 dark:hover:border-[#303E50] transition-colors"
+                className="p-2.5 bg-slate-50 dark:bg-[#150F0A] rounded-lg border border-slate-200 dark:border-[#2E2218] text-xs space-y-1 hover:border-slate-300 dark:hover:border-[#303E50] transition-colors"
               >
                 <div className="flex items-center justify-between font-mono text-[10px]">
                   <span className="text-slate-900 dark:text-[#F1F5F9] font-bold">{complaint.id}</span>
@@ -633,10 +642,10 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                   {complaint.description}
                 </p>
 
-                <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-[#222E3C] text-[10px] font-mono text-slate-400 dark:text-[#64748B]">
+                <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-[#2E2218] text-[10px] font-mono text-slate-400 dark:text-[#64748B]">
                   <span>Reporter: {complaint.reporter_masked || 'Citizen'}</span>
                   {complaint.evidence_photo ? (
-                    <span className="flex items-center gap-1 text-slate-700 dark:text-[#F1F5F9] font-medium bg-white dark:bg-[#131922] px-1.5 py-0.2 rounded border border-slate-200 dark:border-[#222E3C]">
+                    <span className="flex items-center gap-1 text-slate-700 dark:text-[#F1F5F9] font-medium bg-white dark:bg-[#1E1810] px-1.5 py-0.2 rounded border border-slate-200 dark:border-[#2E2218]">
                       <Camera className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                       <span>Geo-Photo</span>
                     </span>
@@ -647,6 +656,9 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
               </div>
             ))}
           </div>
+          </motion.div>
+          )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
