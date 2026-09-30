@@ -44,7 +44,7 @@ export const Dashboard: React.FC = () => {
   const [clusters, setClusters] = useState<IncidentCluster[]>(INITIAL_CLUSTERS);
   const [dataSource, setDataSource] = useState<'live' | 'mock'>('mock');
   const [auditLogs, setAuditLogs] = useState<AuditActionLog[]>(INITIAL_AUDIT_LOGS);
-  const [selectedClusterId, setSelectedClusterId] = useState<string | null>('CLUST-PUN-02');
+  const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
   
   // Navigation tab state: 'triage' | 'queue' | 'impact_log' | 'audit_logs' | 'system_health'
   const [currentTab, setCurrentTab] = useState<NavTab>('triage');
@@ -563,7 +563,7 @@ export const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen bg-slate-100 dark:bg-[#150F0A] text-slate-900 dark:text-[#F1F5F9] overflow-hidden font-sans select-none transition-colors">
+    <div className="flex h-screen w-screen bg-slate-100 dark:bg-[#151210] text-slate-900 dark:text-[#F1F5F9] overflow-hidden font-sans select-none transition-colors">
       
       {/* 1. Left Sidebar: Resizable with Smooth Width Transitions & Snap-to-Collapse */}
       <motion.aside
@@ -580,7 +580,7 @@ export const Dashboard: React.FC = () => {
           window.dispatchEvent(new Event('resize'));
         }}
         className={`h-full relative shrink-0 overflow-hidden ${
-          isLeftSidebarCollapsed ? 'border-r-0 md:w-0' : 'border-r border-slate-200 dark:border-[#2E2218]'
+          isLeftSidebarCollapsed ? 'border-r-0 md:w-0' : 'border-r border-slate-200 dark:border-[#2D2825]'
         } ${isMobileNavOpen ? 'fixed inset-0 z-50 w-72' : 'hidden md:flex'}`}
       >
         <div 
@@ -626,13 +626,13 @@ export const Dashboard: React.FC = () => {
             setIsLeftSidebarCollapsed(true);
             window.dispatchEvent(new Event('leaflet-invalidate-size'));
           }}
-          className={`hidden md:flex items-center justify-center w-1.5 hover:w-2 cursor-col-resize hover:bg-amber-500/80 active:bg-amber-600 bg-slate-200/90 dark:bg-[#261C12] transition-all z-20 shrink-0 select-none group ${
+          className={`hidden md:flex items-center justify-center w-1.5 hover:w-2 cursor-col-resize hover:bg-amber-500/80 active:bg-amber-600 bg-slate-200/90 dark:bg-[#252018] transition-all z-20 shrink-0 select-none group ${
             isLeftDragging ? 'bg-amber-500 w-2' : ''
           }`}
         >
           <div className="w-1 h-8 rounded-full bg-slate-400/80 dark:bg-[#2A3747] group-hover:bg-white group-hover:h-12 transition-all duration-200" />
           {isLeftDragging && (
-            <div className="absolute top-6 left-2 bg-slate-900 dark:bg-[#1E1810] text-white text-[10px] font-mono px-2 py-0.5 rounded-md shadow-md pointer-events-none z-30 whitespace-nowrap border border-slate-700 dark:border-[#2E2218]">
+            <div className="absolute top-6 left-2 bg-slate-900 dark:bg-[#1D1916] text-white text-[10px] font-mono px-2 py-0.5 rounded-md shadow-md pointer-events-none z-30 whitespace-nowrap border border-slate-700 dark:border-[#2D2825]">
               {Math.round(leftSidebarWidth)}px {leftSidebarWidth < 140 ? '(Release to Collapse)' : ''}
             </div>
           )}
@@ -654,7 +654,7 @@ export const Dashboard: React.FC = () => {
           }}
           aria-label="Expand Navigation Sidebar"
           title="Expand Navigation Sidebar (⌘\ or [)"
-          className="fixed top-1/3 -translate-y-1/2 left-0 z-50 w-8 h-20 bg-white/95 dark:bg-[#1E1810] border border-l-0 border-slate-300 dark:border-[#2E2218] rounded-r-xl shadow-2xl flex flex-col items-center justify-center text-slate-700 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-slate-50 dark:hover:bg-[#261C12] hover:w-10 transition-all cursor-pointer select-none group"
+          className="fixed top-1/3 -translate-y-1/2 left-0 z-50 w-8 h-20 bg-white/95 dark:bg-[#1D1916] border border-l-0 border-slate-300 dark:border-[#2D2825] rounded-r-xl shadow-2xl flex flex-col items-center justify-center text-slate-700 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-slate-50 dark:hover:bg-[#252018] hover:w-10 transition-all cursor-pointer select-none group"
         >
           <PanelLeftOpen className="w-4 h-4 mb-1 group-hover:scale-110 transition-transform" />
           <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
@@ -671,7 +671,7 @@ export const Dashboard: React.FC = () => {
           }}
           aria-label="Expand Priority Queue"
           title="Expand Priority Queue (⌘B or ])"
-          className="fixed top-1/3 -translate-y-1/2 right-0 z-50 w-8 h-20 bg-white/95 dark:bg-[#1E1810] border border-r-0 border-slate-300 dark:border-[#2E2218] rounded-l-xl shadow-2xl flex flex-col items-center justify-center text-slate-700 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-slate-50 dark:hover:bg-[#261C12] hover:w-10 transition-all cursor-pointer select-none group"
+          className="fixed top-1/3 -translate-y-1/2 right-0 z-50 w-8 h-20 bg-white/95 dark:bg-[#1D1916] border border-r-0 border-slate-300 dark:border-[#2D2825] rounded-l-xl shadow-2xl flex flex-col items-center justify-center text-slate-700 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-slate-50 dark:hover:bg-[#252018] hover:w-10 transition-all cursor-pointer select-none group"
         >
           <PanelRightOpen className="w-4 h-4 mb-1 group-hover:scale-110 transition-transform" />
           <ChevronLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -694,12 +694,12 @@ export const Dashboard: React.FC = () => {
               setIsLeftSidebarCollapsed(false);
               window.dispatchEvent(new Event('leaflet-invalidate-size'));
             }}
-            className="fixed top-3 left-3 z-50 flex items-center gap-2 px-3.5 py-2 bg-white/95 dark:bg-[#1E1810]/95 backdrop-blur-md border border-slate-300 dark:border-[#2E2218] shadow-xl hover:shadow-2xl rounded-lg text-xs font-semibold text-slate-900 dark:text-[#F1F5F9] hover:border-amber-500/60 dark:hover:border-amber-500/60 transition-all cursor-pointer group select-none"
+            className="fixed top-3 left-3 z-50 flex items-center gap-2 px-3.5 py-2 bg-white/95 dark:bg-[#1D1916]/95 backdrop-blur-md border border-slate-300 dark:border-[#2D2825] shadow-xl hover:shadow-2xl rounded-lg text-xs font-semibold text-slate-900 dark:text-[#F1F5F9] hover:border-amber-500/60 dark:hover:border-amber-500/60 transition-all cursor-pointer group select-none"
             title="Expand Navigation Sidebar ([ or ⌘\)"
           >
             <PanelLeftOpen className="w-4 h-4 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
             <span className="font-sans">Navigation</span>
-            <kbd className="hidden lg:inline text-[9px] text-slate-500 dark:text-[#94A3B8] font-mono bg-slate-100 dark:bg-[#150F0A] px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#2E2218]">
+            <kbd className="hidden lg:inline text-[9px] text-slate-500 dark:text-[#94A3B8] font-mono bg-slate-100 dark:bg-[#151210] px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#2D2825]">
               ⌘\
             </kbd>
           </motion.button>
@@ -709,13 +709,13 @@ export const Dashboard: React.FC = () => {
       {/* Main Command Workspace */}
       <main className="flex-1 h-full flex flex-col overflow-hidden relative">
         {/* Mobile Header Bar */}
-        <header className="md:hidden bg-white dark:bg-[#1E1810] border-b border-slate-200 dark:border-[#2E2218] px-3.5 py-2.5 flex items-center justify-between shrink-0 z-30 transition-colors">
+        <header className="md:hidden bg-white dark:bg-[#1D1916] border-b border-slate-200 dark:border-[#2D2825] px-3.5 py-2.5 flex items-center justify-between shrink-0 z-30 transition-colors">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setIsMobileNavOpen(true)}
               aria-label="Open navigation menu"
-              className="min-h-[44px] min-w-[44px] -ml-2 text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white rounded-md hover:bg-slate-100 dark:hover:bg-[#261C12] flex items-center justify-center transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] -ml-2 text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white rounded-md hover:bg-slate-100 dark:hover:bg-[#252018] flex items-center justify-center transition-colors cursor-pointer"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -730,7 +730,7 @@ export const Dashboard: React.FC = () => {
             <button
               type="button"
               onClick={toggleTheme}
-              className="p-1 rounded-md text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#261C12] transition-colors"
+              className="p-1 rounded-md text-slate-600 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#252018] transition-colors"
               title="Toggle Dark Mode"
             >
               {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
@@ -778,10 +778,10 @@ export const Dashboard: React.FC = () => {
             ) : currentTab === 'queue' ? (
               /* Mode 2: Priority Queue (Full-width scannable triage view) */
               <ErrorBoundary fallbackTitle="Priority Queue View Error">
-                <div className="flex-1 h-full overflow-hidden flex bg-slate-50 dark:bg-[#150F0A] relative transition-colors">
+                <div className="flex-1 h-full overflow-hidden flex bg-slate-50 dark:bg-[#151210] relative transition-colors">
                   <div className="flex-1 h-full overflow-hidden flex justify-center">
                     {rightPaneView === 'detail' && selectedCluster ? (
-                      <div className="w-full max-w-4xl h-full bg-white dark:bg-[#1E1810] border-x border-slate-200 dark:border-[#2E2218] overflow-hidden shadow-xs">
+                      <div className="w-full max-w-4xl h-full bg-white dark:bg-[#1D1916] border-x border-slate-200 dark:border-[#2D2825] overflow-hidden shadow-xs">
                         <ClusterDetail
                           cluster={selectedCluster}
                           onBack={() => setRightPaneView('queue')}
@@ -795,7 +795,7 @@ export const Dashboard: React.FC = () => {
                         />
                       </div>
                     ) : (
-                      <div className="w-full max-w-5xl h-full bg-white dark:bg-[#1E1810] border-x border-slate-200 dark:border-[#2E2218] overflow-hidden shadow-xs flex flex-col">
+                      <div className="w-full max-w-5xl h-full bg-white dark:bg-[#1D1916] border-x border-slate-200 dark:border-[#2D2825] overflow-hidden shadow-xs flex flex-col">
                         <PriorityQueue
                           clusters={clusters}
                           selectedClusterId={selectedClusterId}
@@ -853,8 +853,8 @@ export const Dashboard: React.FC = () => {
               <ErrorBoundary fallbackTitle="Live Triage & Map Error">
                 <div className="flex-1 h-full flex flex-col overflow-hidden relative">
                   {/* Mobile View Switcher Tab Bar (< md) */}
-                  <div className="md:hidden sticky top-0 z-30 bg-white dark:bg-[#1E1810] border-b border-slate-200 dark:border-[#2E2218] px-3 py-2 flex items-center justify-center shrink-0 shadow-xs transition-colors">
-                    <div className="flex bg-slate-100 dark:bg-[#150F0A] p-1 rounded border border-slate-200 dark:border-[#2E2218] w-full max-w-sm">
+                  <div className="md:hidden sticky top-0 z-30 bg-white dark:bg-[#1D1916] border-b border-slate-200 dark:border-[#2D2825] px-3 py-2 flex items-center justify-center shrink-0 shadow-xs transition-colors">
+                    <div className="flex bg-slate-100 dark:bg-[#151210] p-1 rounded border border-slate-200 dark:border-[#2D2825] w-full max-w-sm">
                       <button
                         type="button"
                         onClick={() => {
@@ -866,7 +866,7 @@ export const Dashboard: React.FC = () => {
                         }}
                         className={`flex-1 min-h-[40px] py-1.5 px-3 text-xs font-medium rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation select-none ${
                           mobileTriageView === 'map'
-                            ? 'bg-white dark:bg-[#261C12] text-amber-900 dark:text-amber-300 shadow-xs border border-slate-200 dark:border-[#2E2218] font-semibold'
+                            ? 'bg-white dark:bg-[#252018] text-amber-900 dark:text-amber-300 shadow-xs border border-slate-200 dark:border-[#2D2825] font-semibold'
                             : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
@@ -878,7 +878,7 @@ export const Dashboard: React.FC = () => {
                         onClick={() => setMobileTriageView('queue')}
                         className={`flex-1 min-h-[40px] py-1.5 px-3 text-xs font-medium rounded transition-all flex items-center justify-center gap-1.5 cursor-pointer touch-manipulation select-none ${
                           mobileTriageView === 'queue'
-                            ? 'bg-white dark:bg-[#261C12] text-amber-900 dark:text-amber-300 shadow-xs border border-slate-200 dark:border-[#2E2218] font-semibold'
+                            ? 'bg-white dark:bg-[#252018] text-amber-900 dark:text-amber-300 shadow-xs border border-slate-200 dark:border-[#2D2825] font-semibold'
                             : 'text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
@@ -895,7 +895,7 @@ export const Dashboard: React.FC = () => {
                   >
                     {/* 1. Geospatial Interactive Map */}
                     <section 
-                      className={`h-full relative overflow-hidden bg-slate-100 dark:bg-[#150F0A] flex-1 ${
+                      className={`h-full relative overflow-hidden bg-slate-100 dark:bg-[#151210] flex-1 ${
                         mobileTriageView === 'map' ? 'flex w-full' : 'hidden md:flex'
                       }`}
                     >
@@ -930,13 +930,13 @@ export const Dashboard: React.FC = () => {
                           setIsQueueCollapsed(true);
                           window.dispatchEvent(new Event('leaflet-invalidate-size'));
                         }}
-                        className={`hidden md:flex items-center justify-center w-1.5 hover:w-2 -mr-0.5 cursor-col-resize hover:bg-amber-500/80 active:bg-amber-600 bg-slate-200/90 dark:bg-[#261C12] transition-all z-20 shrink-0 select-none group ${
+                        className={`hidden md:flex items-center justify-center w-1.5 hover:w-2 -mr-0.5 cursor-col-resize hover:bg-amber-500/80 active:bg-amber-600 bg-slate-200/90 dark:bg-[#252018] transition-all z-20 shrink-0 select-none group ${
                           isDragging ? 'bg-amber-500 w-2' : ''
                         }`}
                       >
                         <div className="w-1 h-8 rounded-full bg-slate-400/80 dark:bg-[#2A3747] group-hover:bg-white group-hover:h-12 transition-all duration-200" />
                         {isDragging && (
-                          <div className="absolute top-6 -left-12 bg-slate-900 dark:bg-[#1E1810] text-white text-[10px] font-mono px-2 py-0.5 rounded-md shadow-md pointer-events-none z-30 whitespace-nowrap border border-slate-700 dark:border-[#2E2218]">
+                          <div className="absolute top-6 -left-12 bg-slate-900 dark:bg-[#1D1916] text-white text-[10px] font-mono px-2 py-0.5 rounded-md shadow-md pointer-events-none z-30 whitespace-nowrap border border-slate-700 dark:border-[#2D2825]">
                             {Math.round(sidebarWidth)}px
                           </div>
                         )}
@@ -957,8 +957,8 @@ export const Dashboard: React.FC = () => {
                         window.dispatchEvent(new Event('leaflet-invalidate-size'));
                         window.dispatchEvent(new Event('resize'));
                       }}
-                      className={`h-full relative flex-col bg-white/95 dark:bg-[#1E1810]/95 backdrop-blur-xl shrink-0 overflow-hidden ${
-                        isQueueCollapsed ? 'border-l-0 md:w-0' : 'border-l border-slate-200/90 dark:border-[#2E2218]'
+                      className={`h-full relative flex-col bg-white/95 dark:bg-[#1D1916]/95 backdrop-blur-xl shrink-0 overflow-hidden ${
+                        isQueueCollapsed ? 'border-l-0 md:w-0' : 'border-l border-slate-200/90 dark:border-[#2D2825]'
                       } ${mobileTriageView === 'queue' ? 'flex w-full' : 'hidden'} ${
                         isQueueCollapsed ? 'md:flex md:w-0' : 'md:flex'
                       }`}
@@ -973,7 +973,7 @@ export const Dashboard: React.FC = () => {
                           }}
                           aria-label="Collapse Priority Queue"
                           title="Collapse Priority Queue (⌘B or ])"
-                          className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-2.5 z-30 w-5 h-12 bg-white/95 dark:bg-[#1E1810]/95 backdrop-blur-xs border border-slate-300/80 dark:border-[#2E2218] shadow-xs hover:shadow-md items-center justify-center text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#261C12] rounded-md transition-all cursor-pointer select-none group"
+                          className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-2.5 z-30 w-5 h-12 bg-white/95 dark:bg-[#1D1916]/95 backdrop-blur-xs border border-slate-300/80 dark:border-[#2D2825] shadow-xs hover:shadow-md items-center justify-center text-slate-500 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#252018] rounded-md transition-all cursor-pointer select-none group"
                         >
                           <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                         </button>

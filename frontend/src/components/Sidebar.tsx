@@ -94,10 +94,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {/* Sidebar Content Container */}
-      <div className="h-full w-full bg-[#FFFDF9] dark:bg-[#1E1810] border-r border-[#EAE2D8] dark:border-[#2E2218] flex flex-col justify-between select-none text-[#1C120A] dark:text-[#FEF3E2] transition-colors duration-200 overflow-hidden">
+      <div className="h-full w-full bg-[#FFFDF9] dark:bg-[#1D1916] border-r border-[#EAE2D8] dark:border-[#2D2825] flex flex-col justify-between select-none text-[#1C120A] dark:text-[#FEF3E2] transition-colors duration-200 overflow-hidden">
         {/* Header / Brand */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-4 border-b border-[#EAE2D8] dark:border-[#2E2218] flex items-center justify-between bg-[#FFFDF9] dark:bg-[#1E1810] transition-colors">
+          <div className="p-4 border-b border-[#EAE2D8] dark:border-[#2D2825] flex items-center justify-between bg-[#FFFDF9] dark:bg-[#1D1916] transition-colors">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded bg-amber-600 dark:bg-amber-500 flex items-center justify-center text-white shrink-0 shadow-xs">
                 <Shield className="w-3.5 h-3.5 text-white" />
@@ -118,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   type="button"
                   onClick={onToggleCollapse}
-                  className="hidden md:flex w-8 h-8 items-center justify-center text-[#9B8472] hover:text-[#1C120A] dark:text-[#B89880] dark:hover:text-[#FEF3E2] rounded-md hover:bg-[#F5EDE0] dark:hover:bg-[#261C12] transition-colors cursor-pointer"
+                  className="hidden md:flex w-8 h-8 items-center justify-center text-[#9B8472] hover:text-[#1C120A] dark:text-[#B89880] dark:hover:text-[#FEF3E2] rounded-md hover:bg-[#F5EDE0] dark:hover:bg-[#252018] transition-colors cursor-pointer"
                   title="Collapse Sidebar (⌘\ or [)"
                   aria-label="Collapse navigation sidebar"
                 >
@@ -129,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 type="button"
                 onClick={onMobileClose}
-                className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-[#9B8472] hover:text-[#1C120A] dark:hover:text-[#FEF3E2] rounded-md hover:bg-[#F5EDE0] dark:hover:bg-[#261C12] transition-colors cursor-pointer"
+                className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-[#9B8472] hover:text-[#1C120A] dark:hover:text-[#FEF3E2] rounded-md hover:bg-[#F5EDE0] dark:hover:bg-[#252018] transition-colors cursor-pointer"
                 aria-label="Close navigation menu"
               >
                 <X className="w-5 h-5" />
@@ -137,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          <div className="mx-3 mt-3 px-2.5 py-1.5 rounded bg-[#F5EDE0] dark:bg-[#150F0A] border border-[#EAE2D8] dark:border-[#2E2218] flex items-center justify-between text-[11px] font-mono">
+          <div className="mx-3 mt-3 px-2.5 py-1.5 rounded bg-[#F5EDE0] dark:bg-[#151210] border border-[#EAE2D8] dark:border-[#2D2825] flex items-center justify-between text-[11px] font-mono">
             <span className="text-[#9B8472] dark:text-[#B89880] font-medium">{t('nav.jurisdiction', 'JURISDICTION')}</span>
             <span className="text-amber-700 dark:text-amber-400 font-semibold">{user.ward || 'PMC Pune HQ'}</span>
           </div>
@@ -159,7 +159,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className={`w-full min-h-[40px] flex items-center justify-between px-2.5 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer touch-manipulation relative select-none ${
                     isActive
                       ? 'text-amber-700 dark:text-amber-300 font-semibold'
-                      : 'text-[#6E5A47] dark:text-[#B89880] hover:text-[#1C120A] dark:hover:text-[#FEF3E2] hover:bg-[#F5EDE0]/70 dark:hover:bg-[#261C12]'
+                      : 'text-[#6E5A47] dark:text-[#B89880] hover:text-[#1C120A] dark:hover:text-[#FEF3E2] hover:bg-[#F5EDE0]/70 dark:hover:bg-[#252018]'
                   }`}
                 >
                   {isActive && (
@@ -194,7 +194,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
             </div>
 
-            <div className="bg-[#F5EDE0] dark:bg-[#150F0A] p-2.5 rounded border border-[#EAE2D8] dark:border-[#2E2218] space-y-1.5 text-[11px] font-mono">
+            <div className="bg-[#F5EDE0] dark:bg-[#151210] p-2.5 rounded border border-[#EAE2D8] dark:border-[#2D2825] space-y-1.5 text-[11px] font-mono">
               <div className="flex items-center justify-between">
                 <span className="text-[#9B8472] dark:text-[#B89880]">{t('nav.sameer_feed', 'SAMEER Feed:')}</span>
                 <span className="text-amber-700 dark:text-amber-400 font-semibold">{t('nav.live', 'Live')}</span>
@@ -214,9 +214,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Footer: Theme Toggle & Officer Stamp */}
-        <div className="p-2.5 border-t border-[#EAE2D8] dark:border-[#2E2218] bg-[#F5EDE0]/50 dark:bg-[#150F0A] space-y-2 shrink-0">
+        <div className="p-2.5 border-t border-[#EAE2D8] dark:border-[#2D2825] bg-[#F5EDE0]/50 dark:bg-[#151210] space-y-2 shrink-0">
           {/* Theme Toggle */}
-          <div className="flex items-center justify-between p-1 bg-[#EAE2D8]/70 dark:bg-[#150F0A] rounded-lg text-xs font-mono border border-transparent dark:border-[#2E2218]">
+          <div className="flex items-center justify-between p-1 bg-[#EAE2D8]/70 dark:bg-[#151210] rounded-lg text-xs font-mono border border-transparent dark:border-[#2D2825]">
             <button
               type="button"
               onClick={() => theme === 'dark' && toggleTheme()}
@@ -235,7 +235,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => theme === 'light' && toggleTheme()}
               className={`flex-1 py-1 px-2 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 theme === 'dark'
-                  ? 'bg-[#261C12] text-[#FEF3E2] shadow-2xs font-semibold'
+                  ? 'bg-[#252018] text-[#FEF3E2] shadow-2xs font-semibold'
                   : 'text-[#9B8472] hover:text-[#6E5A47] dark:text-[#B89880] dark:hover:text-[#FEF3E2]'
               }`}
               title="Switch to Dark Mode"
@@ -252,7 +252,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`w-full flex items-center justify-between p-2 rounded border shadow-2xs transition-all cursor-pointer select-none text-left group ${
               activeTab === 'settings'
                 ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-400/60'
-                : 'bg-[#FFFDF9] dark:bg-[#1E1810] border-[#EAE2D8] dark:border-[#2E2218] hover:border-amber-400/40'
+                : 'bg-[#FFFDF9] dark:bg-[#1D1916] border-[#EAE2D8] dark:border-[#2D2825] hover:border-amber-400/40'
             }`}
             title="Open Officer Settings"
           >

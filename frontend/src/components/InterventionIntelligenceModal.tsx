@@ -379,10 +379,10 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 16 }}
             transition={{ type: 'spring', stiffness: 340, damping: 28 }}
-            className="intervention-print-root w-full max-w-[1200px] h-[92vh] bg-[#FFFDF9] dark:bg-[#1E1810] rounded-2xl shadow-2xl border border-[#EAE2D8] dark:border-[#2E2218] flex flex-col overflow-hidden"
+            className="intervention-print-root w-full max-w-[1200px] h-[92vh] bg-[#FFFDF9] dark:bg-[#1D1916] rounded-2xl shadow-2xl border border-[#EAE2D8] dark:border-[#2D2825] flex flex-col overflow-hidden"
           >
             {/* ── Header ── */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-[#EAE2D8] dark:border-[#2E2218] bg-[#FEF9F2] dark:bg-[#150F0A] shrink-0">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[#EAE2D8] dark:border-[#2D2825] bg-[#FEF9F2] dark:bg-[#151210] shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/50 flex items-center justify-center">
                   <Zap className="w-4 h-4 text-amber-600 dark:text-amber-400" />
@@ -399,7 +399,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
 
               <div className="flex items-center gap-2">
                 {/* SLA countdown */}
-                <div className={`flex items-center gap-1.5 text-xs font-mono font-semibold ${urgencyColor} bg-[#FEF9F2] dark:bg-[#150F0A] px-2.5 py-1 rounded-lg border border-[#EAE2D8] dark:border-[#2E2218]`}>
+                <div className={`flex items-center gap-1.5 text-xs font-mono font-semibold ${urgencyColor} bg-[#FEF9F2] dark:bg-[#151210] px-2.5 py-1 rounded-lg border border-[#EAE2D8] dark:border-[#2D2825]`}>
                   <Clock className="w-3.5 h-3.5" />
                   <span>{cluster.hours_remaining.toFixed(1)}h SLA</span>
                 </div>
@@ -408,7 +408,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                 <button
                   type="button"
                   onClick={handlePrint}
-                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-[#EAE2D8] dark:border-[#2E2218] text-[#6E5A47] dark:text-[#B89880] hover:bg-[#F5EDE0] dark:hover:bg-[#261C12] transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-[#EAE2D8] dark:border-[#2D2825] text-[#6E5A47] dark:text-[#B89880] hover:bg-[#F5EDE0] dark:hover:bg-[#252018] transition-colors cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Export PDF</span>
@@ -427,7 +427,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[#9B8472] dark:text-[#B89880] hover:bg-[#F5EDE0] dark:hover:bg-[#261C12] hover:text-[#1C120A] dark:hover:text-[#FEF3E2] transition-colors cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[#9B8472] dark:text-[#B89880] hover:bg-[#F5EDE0] dark:hover:bg-[#252018] hover:text-[#1C120A] dark:hover:text-[#FEF3E2] transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -435,7 +435,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
             </div>
 
             {/* Incident title strip */}
-            <div className="px-5 py-2.5 bg-white dark:bg-[#1E1810] border-b border-[#EAE2D8] dark:border-[#2E2218] shrink-0 print-section">
+            <div className="px-5 py-2.5 bg-white dark:bg-[#1D1916] border-b border-[#EAE2D8] dark:border-[#2D2825] shrink-0 print-section">
               <h3 className="text-sm font-bold text-[#1C120A] dark:text-[#FEF3E2] leading-snug">{cluster.title}</h3>
               <div className="flex items-center gap-3 mt-0.5 text-[11px] text-[#9B8472] dark:text-[#B89880] font-mono">
                 <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{cluster.location_name}</span>
@@ -452,8 +452,8 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
             <div className="flex-1 flex overflow-hidden min-h-0">
 
               {/* LEFT: Map */}
-              <div className="w-[42%] flex flex-col border-r border-[#EAE2D8] dark:border-[#2E2218] shrink-0">
-                <div className="px-3 py-2 border-b border-[#EAE2D8] dark:border-[#2E2218] flex items-center justify-between shrink-0">
+              <div className="w-[42%] flex flex-col border-r border-[#EAE2D8] dark:border-[#2D2825] shrink-0">
+                <div className="px-3 py-2 border-b border-[#EAE2D8] dark:border-[#2D2825] flex items-center justify-between shrink-0">
                   <span className="text-[11px] font-semibold text-[#6E5A47] dark:text-[#B89880] font-mono uppercase tracking-wide">Wind-Adjusted Affected Zone</span>
                   <span className="flex items-center gap-1 text-[10px] font-mono text-amber-600 dark:text-amber-400">
                     <Navigation className="w-3 h-3" />
@@ -462,7 +462,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                 </div>
                 <div ref={mapRef} className="flex-1 min-h-0" />
                 {/* Map legend */}
-                <div className="px-3 py-1.5 border-t border-[#EAE2D8] dark:border-[#2E2218] flex items-center gap-4 text-[10px] font-mono text-[#9B8472] dark:text-[#B89880] shrink-0">
+                <div className="px-3 py-1.5 border-t border-[#EAE2D8] dark:border-[#2D2825] flex items-center gap-4 text-[10px] font-mono text-[#9B8472] dark:text-[#B89880] shrink-0">
                   <span className="flex items-center gap-1.5">
                     <span className="w-3 h-3 rounded-full bg-rose-500 border-2 border-white inline-block shrink-0" />
                     Source cluster
@@ -479,8 +479,8 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
               </div>
 
               {/* CENTER: Directive */}
-              <div className="flex-1 flex flex-col overflow-y-auto border-r border-[#EAE2D8] dark:border-[#2E2218]">
-                <div className="px-4 py-2 border-b border-[#EAE2D8] dark:border-[#2E2218] shrink-0">
+              <div className="flex-1 flex flex-col overflow-y-auto border-r border-[#EAE2D8] dark:border-[#2D2825]">
+                <div className="px-4 py-2 border-b border-[#EAE2D8] dark:border-[#2D2825] shrink-0">
                   <span className="text-[11px] font-semibold text-[#6E5A47] dark:text-[#B89880] font-mono uppercase tracking-wide">AI Enforcement Directive</span>
                 </div>
 
@@ -490,7 +490,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                     <label className="text-[10px] font-mono font-semibold text-[#9B8472] dark:text-[#786050] uppercase tracking-wider block">
                       Target Agency
                     </label>
-                    <div className="flex items-center gap-2 p-2.5 bg-[#F5EDE0] dark:bg-[#150F0A] rounded-lg border border-[#EAE2D8] dark:border-[#2E2218]">
+                    <div className="flex items-center gap-2 p-2.5 bg-[#F5EDE0] dark:bg-[#151210] rounded-lg border border-[#EAE2D8] dark:border-[#2D2825]">
                       <Building2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                       <span className="text-sm font-semibold text-[#1C120A] dark:text-[#FEF3E2]">{recommendation.targetAgency}</span>
                     </div>
@@ -511,7 +511,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                     <label className="text-[10px] font-mono font-semibold text-[#9B8472] dark:text-[#786050] uppercase tracking-wider block">
                       Legal Authority
                     </label>
-                    <div className="flex items-center gap-2 p-2 bg-[#F5EDE0] dark:bg-[#150F0A] border border-[#EAE2D8] dark:border-[#2E2218] rounded-lg font-mono text-[11px] text-amber-800 dark:text-amber-300">
+                    <div className="flex items-center gap-2 p-2 bg-[#F5EDE0] dark:bg-[#151210] border border-[#EAE2D8] dark:border-[#2D2825] rounded-lg font-mono text-[11px] text-amber-800 dark:text-amber-300">
                       <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
                       <span className="font-semibold">{recommendation.legalProvision}</span>
                     </div>
@@ -522,7 +522,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                     <label className="text-[10px] font-mono font-semibold text-[#9B8472] dark:text-[#786050] uppercase tracking-wider block">
                       Operational Assessment
                     </label>
-                    <p className="text-xs text-[#6E5A47] dark:text-[#B89880] leading-relaxed p-2.5 bg-[#F5EDE0]/50 dark:bg-[#150F0A]/50 rounded-lg border border-[#EAE2D8] dark:border-[#2E2218]">
+                    <p className="text-xs text-[#6E5A47] dark:text-[#B89880] leading-relaxed p-2.5 bg-[#F5EDE0]/50 dark:bg-[#151210]/50 rounded-lg border border-[#EAE2D8] dark:border-[#2D2825]">
                       {recommendation.rationale}
                     </p>
                   </div>
@@ -557,7 +557,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                         { label: 'Secondary', value: agencies.secondary, color: 'text-[#6E5A47] dark:text-[#B89880]' },
                         { label: 'Escalation', value: agencies.escalation, color: 'text-rose-600 dark:text-rose-400' },
                       ].map(({ label, value, color }) => (
-                        <div key={label} className="flex items-center gap-2 text-xs p-1.5 rounded bg-[#F5EDE0]/60 dark:bg-[#150F0A]/60">
+                        <div key={label} className="flex items-center gap-2 text-xs p-1.5 rounded bg-[#F5EDE0]/60 dark:bg-[#151210]/60">
                           <ChevronRight className="w-3 h-3 text-amber-500 shrink-0" />
                           <span className="text-[10px] font-mono text-[#9B8472] dark:text-[#786050] w-16 shrink-0">{label}:</span>
                           <span className={`font-medium ${color} text-[11px]`}>{value}</span>
@@ -568,7 +568,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                 </div>
 
                 {/* Dispatch button */}
-                <div className="p-3 border-t border-[#EAE2D8] dark:border-[#2E2218] shrink-0 no-print">
+                <div className="p-3 border-t border-[#EAE2D8] dark:border-[#2D2825] shrink-0 no-print">
                   <button
                     type="button"
                     onClick={onClose}
@@ -582,7 +582,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
 
               {/* RIGHT: Stats + Checklist */}
               <div className="w-[25%] flex flex-col overflow-y-auto shrink-0 min-w-[220px]">
-                <div className="px-3 py-2 border-b border-[#EAE2D8] dark:border-[#2E2218] shrink-0">
+                <div className="px-3 py-2 border-b border-[#EAE2D8] dark:border-[#2D2825] shrink-0">
                   <span className="text-[11px] font-semibold text-[#6E5A47] dark:text-[#B89880] font-mono uppercase tracking-wide">Response Checklist</span>
                 </div>
 
@@ -601,7 +601,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                       <div className="text-base font-bold text-amber-800 dark:text-amber-300 font-mono">{cluster.priority_score}</div>
                       <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80">/100 score</div>
                     </div>
-                    <div className="p-2.5 bg-[#F5EDE0] dark:bg-[#150F0A] border border-[#EAE2D8] dark:border-[#2E2218] rounded-lg space-y-0.5 col-span-2">
+                    <div className="p-2.5 bg-[#F5EDE0] dark:bg-[#151210] border border-[#EAE2D8] dark:border-[#2D2825] rounded-lg space-y-0.5 col-span-2">
                       <div className="text-[10px] font-mono text-[#9B8472] dark:text-[#786050] font-semibold">WIND DISPERSION</div>
                       <div className="flex items-center gap-2 text-sm font-bold text-[#1C120A] dark:text-[#FEF3E2] font-mono">
                         <Navigation className="w-3.5 h-3.5 text-amber-500" style={{ transform: `rotate(${windDeg}deg)` }} />
@@ -623,7 +623,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                     </div>
 
                     {/* Progress bar */}
-                    <div className="h-1.5 w-full bg-[#EAE2D8] dark:bg-[#2E2218] rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-[#EAE2D8] dark:bg-[#2D2825] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-amber-500 dark:bg-amber-400 rounded-full transition-all duration-300"
                         style={{ width: `${checklist.length > 0 ? (checkedCount / checklist.length) * 100 : 0}%` }}
@@ -636,7 +636,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                           key={i}
                           type="button"
                           onClick={() => toggleCheck(i)}
-                          className="w-full flex items-start gap-2 p-2 rounded-lg hover:bg-[#F5EDE0] dark:hover:bg-[#261C12] transition-colors text-left cursor-pointer group"
+                          className="w-full flex items-start gap-2 p-2 rounded-lg hover:bg-[#F5EDE0] dark:hover:bg-[#252018] transition-colors text-left cursor-pointer group"
                         >
                           {checkedItems[i] ? (
                             <CheckSquare className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
@@ -672,7 +672,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
                   )}
 
                   {/* Population note */}
-                  <div className="p-2.5 bg-[#F5EDE0] dark:bg-[#150F0A] border border-[#EAE2D8] dark:border-[#2E2218] rounded-lg flex items-start gap-2">
+                  <div className="p-2.5 bg-[#F5EDE0] dark:bg-[#151210] border border-[#EAE2D8] dark:border-[#2D2825] rounded-lg flex items-start gap-2">
                     <Users className="w-3.5 h-3.5 text-[#9B8472] dark:text-[#B89880] shrink-0 mt-0.5" />
                     <p className="text-[10px] text-[#6E5A47] dark:text-[#B89880] leading-snug">
                       Population estimate based on Pune urban density (~6,200/km²) and computed wind-zone area. Actual exposure depends on building shielding and ventilation.

@@ -35,19 +35,19 @@
   color-scheme: light;
 }
 
-/* Warm Hearth Palette — Amber & Sandstone */
+/* Warm Charcoal Palette — muted, professional, non-vivid */
 .dark {
-  --canvas: #150F0A;
-  --panel: #1E1810;
-  --panel-border: #2E2218;
-  --panel-hover: #261C12;
-  --text-primary: #FEF3E2;
-  --text-secondary: #B89880;
-  --text-muted: #786050;
-  --brand: #FBBF24;
-  --signal-critical: #F43F5E;
-  --signal-warning: #FBBF24;
-  --signal-resolved: #10B981;
+  --canvas: #151210;
+  --panel: #1D1916;
+  --panel-border: #2D2825;
+  --panel-hover: #252018;
+  --text-primary: #F0E8DF;
+  --text-secondary: #A09080;
+  --text-muted: #6A5C54;
+  --brand: #D97706;
+  --signal-critical: #EF4444;
+  --signal-warning: #D97706;
+  --signal-resolved: #16A34A;
   color-scheme: dark;
 }
 
@@ -55,6 +55,9 @@ body {
   background-color: #FEF9F2;
   color: #1C120A;
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
@@ -70,8 +73,8 @@ code, pre, .font-mono {
 }
 
 body.dark {
-  background-color: #150F0A;
-  color: #FEF3E2;
+  background-color: #151210;
+  color: #F0E8DF;
 }
 
 /* Institutional Leaflet Container */
@@ -84,7 +87,7 @@ body.dark {
 }
 
 .dark .leaflet-container {
-  background: #150F0A !important;
+  background: #151210 !important;
 }
 
 /* Map Zoom Controls */
@@ -96,7 +99,7 @@ body.dark {
 }
 
 .dark .leaflet-bar {
-  border: 1px solid #2E2218 !important;
+  border: 1px solid #2D2825 !important;
   box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.5) !important;
 }
 
@@ -111,9 +114,9 @@ body.dark {
 }
 
 .dark .leaflet-bar a {
-  background-color: #1E1810 !important;
+  background-color: #1D1916 !important;
   color: #FEF3E2 !important;
-  border-bottom: 1px solid #2E2218 !important;
+  border-bottom: 1px solid #2D2825 !important;
 }
 
 .leaflet-bar a:hover {
@@ -122,7 +125,7 @@ body.dark {
 }
 
 .dark .leaflet-bar a:hover {
-  background-color: #261C12 !important;
+  background-color: #252018 !important;
   color: #FFFFFF !important;
 }
 
@@ -157,9 +160,9 @@ body.dark {
 }
 
 .dark .leaflet-popup-content-wrapper {
-  background: #1E1810 !important;
+  background: #1D1916 !important;
   color: #FEF3E2 !important;
-  border: 1px solid #2E2218 !important;
+  border: 1px solid #2D2825 !important;
   box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.7) !important;
 }
 
@@ -174,8 +177,8 @@ body.dark {
 }
 
 .dark .leaflet-popup-tip {
-  background: #1E1810 !important;
-  border: 1px solid #2E2218 !important;
+  background: #1D1916 !important;
+  border: 1px solid #2D2825 !important;
 }
 
 /* Sleek Command Scrollbar */
@@ -195,11 +198,11 @@ body.dark {
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #2E2218;
+  background: #2D2825;
   border-radius: 3px;
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #3E3020;
+  background: #353028;
 }
 
 /* ═══════════════════════════════════════════
@@ -231,12 +234,12 @@ body.dark {
 }
 
 .dark .weight-slider::-webkit-slider-runnable-track {
-  background: #261C12;
-  border-color: #3E3020;
+  background: #252018;
+  border-color: #353028;
 }
 .dark .weight-slider::-moz-range-track {
-  background: #261C12;
-  border-color: #3E3020;
+  background: #252018;
+  border-color: #353028;
 }
 
 .weight-slider::-webkit-slider-thumb {
@@ -282,11 +285,11 @@ body.dark {
 }
 
 .dark .weight-slider::-webkit-slider-thumb {
-  background: #261C12;
+  background: #252018;
   box-shadow: 0 1px 8px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,255,255,0.06);
 }
 .dark .weight-slider::-moz-range-thumb {
-  background: #261C12;
+  background: #252018;
 }
 
 /* ═══════════════════════════════════════════
