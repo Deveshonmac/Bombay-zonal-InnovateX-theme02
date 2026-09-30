@@ -54,6 +54,9 @@ export interface IncidentCluster {
   lat: number;
   lng: number;
   center: [number, number]; // [lat, lng] for Leaflet convenience
+  windSpeed?: number;       // km/h
+  windDirection?: string;   // e.g. 'NW'
+  windDeg?: number;         // meteorological degrees (0=N, 90=E, 180=S, 270=W)
   primary_category: string;
   category: ComplaintCategory; // backward compat alias
   complaint_count: number;

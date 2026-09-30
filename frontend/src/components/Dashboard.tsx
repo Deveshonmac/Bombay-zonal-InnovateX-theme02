@@ -22,7 +22,9 @@ import { ImpactLogView } from './ImpactLogView';
 import { ResolveIncidentModal } from './ResolveIncidentModal';
 import { SettingsView } from './SettingsView';
 import { OfficerWalkthrough } from './OfficerWalkthrough';
+import { InterventionIntelligenceModal } from './InterventionIntelligenceModal';
 import { ErrorBoundary } from './ErrorBoundary';
+import { StatutoryRecommendation } from '../services/geminiService';
 import { useTheme } from '../context/ThemeContext';
 import { useSettings } from '../context/SettingsContext';
 import { 
@@ -60,6 +62,10 @@ export const Dashboard: React.FC = () => {
 
   // Active resolution modal target
   const [resolveModalCluster, setResolveModalCluster] = useState<IncidentCluster | null>(null);
+
+  // Intervention Intelligence Modal state
+  const [interventionModalCluster, setInterventionModalCluster] = useState<IncidentCluster | null>(null);
+  const [interventionModalRec, setInterventionModalRec] = useState<StatutoryRecommendation | null>(null);
 
   // Guided Officer Tour state
   const [isTourOpen, setIsTourOpen] = useState(false);
@@ -349,7 +355,10 @@ export const Dashboard: React.FC = () => {
       }
 
       if (e.key === 'Escape') {
-        if (resolveModalCluster) {
+        if (interventionModalCluster) {
+          setInterventionModalCluster(null);
+          setInterventionModalRec(null);
+        } else if (resolveModalCluster) {
           setResolveModalCluster(null);
         } else if (adminModalCluster) {
           setAdminModalCluster(null);
@@ -758,6 +767,10 @@ export const Dashboard: React.FC = () => {
                           onUpdateStatus={handleUpdateClusterStatus}
                           onOpenAdminModal={handleExecuteAdminAction}
                           onOpenResolveModal={cluster => setResolveModalCluster(cluster)}
+                          onOpenInterventionModal={(cluster, rec) => {
+                            setInterventionModalCluster(cluster);
+                            setInterventionModalRec(rec);
+                          }}
                         />
                       </div>
                     ) : (
@@ -1006,6 +1019,18 @@ export const Dashboard: React.FC = () => {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Intervention Intelligence Modal */}
+      {interventionModalCluster && interventionModalRec && (
+        <InterventionIntelligenceModal
+          cluster={interventionModalCluster}
+          recommendation={interventionModalRec}
+          onClose={() => {
+            setInterventionModalCluster(null);
+            setInterventionModalRec(null);
+          }}
+        />
+      )}
 
       {/* Administrative Directive Modal */}
       {adminModalCluster && (

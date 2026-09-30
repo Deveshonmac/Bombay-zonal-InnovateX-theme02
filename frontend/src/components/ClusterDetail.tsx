@@ -5,29 +5,30 @@ import {
   TicketStatus, 
   AuditActionLog 
 } from '../types';
-import { 
-  ArrowLeft, 
-  Clock, 
-  Scale, 
-  CheckCircle2, 
-  MapPin, 
-  Camera, 
-  FileText, 
-  ShieldCheck, 
-  ShieldAlert, 
-  Sparkles, 
-  Building2, 
-  Flame, 
-  Wind, 
-  Factory, 
-  Car, 
-  AlertTriangle, 
-  Send, 
-  Edit3, 
-  Check, 
-  RotateCw, 
-  ChevronDown, 
-  ChevronUp 
+import {
+  ArrowLeft,
+  Clock,
+  Scale,
+  CheckCircle2,
+  MapPin,
+  Camera,
+  FileText,
+  ShieldCheck,
+  ShieldAlert,
+  Sparkles,
+  Building2,
+  Flame,
+  Wind,
+  Factory,
+  Car,
+  AlertTriangle,
+  Send,
+  Edit3,
+  Check,
+  RotateCw,
+  ChevronDown,
+  ChevronUp,
+  Map
 } from 'lucide-react';
 import { 
   generateStatutoryRecommendation, 
@@ -39,9 +40,9 @@ interface ClusterDetailProps {
   cluster: IncidentCluster;
   onBack: () => void;
   onUpdateStatus: (
-    clusterId: string, 
-    newStatus: TicketStatus, 
-    actionNote: string, 
+    clusterId: string,
+    newStatus: TicketStatus,
+    actionNote: string,
     actionType: AuditActionLog['action_type']
   ) => void;
   onOpenAdminModal: (
@@ -54,6 +55,7 @@ interface ClusterDetailProps {
     }
   ) => void;
   onOpenResolveModal?: (cluster: IncidentCluster) => void;
+  onOpenInterventionModal?: (cluster: IncidentCluster, recommendation: StatutoryRecommendation) => void;
 }
 
 export const ClusterDetail: React.FC<ClusterDetailProps> = ({
@@ -61,7 +63,8 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
   onBack,
   onUpdateStatus,
   onOpenAdminModal,
-  onOpenResolveModal
+  onOpenResolveModal,
+  onOpenInterventionModal,
 }) => {
   const [showExplainability, setShowExplainability] = useState(false);
   const [showComplaints, setShowComplaints] = useState(false);
@@ -500,8 +503,8 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                 </div>
               )}
 
-              {/* Immediate Action Button */}
-              <div className="pt-1">
+              {/* Action Buttons */}
+              <div className="pt-1 space-y-2">
                 <button
                   type="button"
                   onClick={handleApplyToDirective}
@@ -510,9 +513,17 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
                   <Send className="w-3.5 h-3.5" />
                   <span>Apply to Enforcement Directive</span>
                 </button>
-                <p className="text-[10px] text-slate-500 dark:text-[#94A3B8] font-mono text-center mt-1">
-                  Pre-fills official administrative order modal for nodal dispatch
-                </p>
+
+                {onOpenInterventionModal && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenInterventionModal(cluster, recommendation)}
+                    className="w-full px-3 py-2 rounded-md bg-[#1C120A] hover:bg-[#2C1C0E] dark:bg-[#FEF3E2] dark:hover:bg-white text-white dark:text-[#1C120A] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer touch-manipulation border border-[#2C1C0E] dark:border-[#EAE2D8]"
+                  >
+                    <Map className="w-3.5 h-3.5" />
+                    <span>View Full Intervention Plan →</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
