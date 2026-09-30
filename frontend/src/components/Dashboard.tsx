@@ -36,11 +36,13 @@ import {
   ResolutionRecord
 } from '../types';
 import { INITIAL_CLUSTERS, INITIAL_AUDIT_LOGS } from '../data/mockData';
+import { fetchLiveClusters } from '../services/clusterService';
 
 export const Dashboard: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const { t, user } = useSettings();
   const [clusters, setClusters] = useState<IncidentCluster[]>(INITIAL_CLUSTERS);
+  const [dataSource, setDataSource] = useState<'live' | 'mock'>('mock');
   const [auditLogs, setAuditLogs] = useState<AuditActionLog[]>(INITIAL_AUDIT_LOGS);
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>('CLUST-PUN-02');
   
@@ -176,6 +178,17 @@ export const Dashboard: React.FC = () => {
   const [isDesktop, setIsDesktop] = useState(
     typeof window !== 'undefined' ? window.innerWidth >= 768 : true
   );
+
+  // Try to load live DBSCAN clusters from Python backend; fall back to mock data silently
+  useEffect(() => {
+    fetchLiveClusters().then(result => {
+      if (result.source === 'live' && result.clusters.length > 0) {
+        setClusters(result.clusters);
+        setDataSource('live');
+        setSelectedClusterId(result.clusters[0]?.cluster_id ?? null);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -723,7 +736,15 @@ export const Dashboard: React.FC = () => {
               {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
             </button>
             <span>PMC Pune</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" title="CPCB Feed Live"></span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full animate-pulse ${dataSource === 'live' ? 'bg-emerald-500' : 'bg-amber-500'}`}
+              title={dataSource === 'live' ? 'DBSCAN Live Data' : 'Demo Data'}
+            ></span>
+            {dataSource === 'live' && (
+              <span className="text-[10px] font-mono px-1 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 rounded">
+                LIVE
+              </span>
+            )}
           </div>
         </header>
 

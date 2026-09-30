@@ -22,6 +22,32 @@ const ai = new GoogleGenAI({
   },
 });
 
+const PYTHON_BACKEND = 'http://localhost:8000';
+
+// Proxy: GET /api/clusters → Python FastAPI /api/clusters/priority
+app.get('/api/clusters', async (_req, res) => {
+  try {
+    const r = await fetch(`${PYTHON_BACKEND}/api/clusters/priority`);
+    if (!r.ok) throw new Error(`Python backend returned ${r.status}`);
+    const data = await r.json();
+    res.json(data);
+  } catch (err: any) {
+    res.status(503).json({ error: 'Python DBSCAN backend offline', fallback: true });
+  }
+});
+
+// Proxy: POST /api/clusters/trigger → seeds DB then runs DBSCAN
+app.post('/api/clusters/trigger', async (_req, res) => {
+  try {
+    const r = await fetch(`${PYTHON_BACKEND}/api/clusters/run`, { method: 'POST' });
+    if (!r.ok) throw new Error(`Python backend returned ${r.status}`);
+    const data = await r.json();
+    res.json(data);
+  } catch (err: any) {
+    res.status(503).json({ error: 'Python DBSCAN backend offline', fallback: true });
+  }
+});
+
 app.post('/api/recommendation', async (req, res) => {
   const { category, location, aqi, complaint_count, severity } = req.body;
 
