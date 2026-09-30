@@ -33,7 +33,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   const baseTileLayerRef = useRef<L.TileLayer | null>(null);
   const labelsTileLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<{ [key: string]: L.Marker }>({});
-  const circlesRef = useRef<{ [key: string]: L.Circle }>({});
+  const circlesRef = useRef<{ [key: string]: L.Polygon | L.Circle }>({});
   const onInspectClusterRef = useRef(onInspectCluster);
   const onSelectClusterRef = useRef(onSelectCluster);
 
@@ -259,15 +259,41 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
       const centerCoord: [number, number] = cluster.center || [cluster.lat || 18.5204, cluster.lng || 73.8567];
 
-      // Geographic radius circle
-      const circleRadius = Math.min(1400, Math.max(600, cluster.complaint_count * 20));
-      const circle = L.circle(centerCoord, {
-        radius: circleRadius,
+      // Wind-adjusted ellipse polygon (downwind zone)
+      const windDeg = cluster.windDeg ?? 270;
+      const windSpeed = cluster.windSpeed ?? 10;
+      const aqi = cluster.avg_aqi || cluster.local_aqi || 150;
+
+      const KM_PER_DEG_LAT = 111.32;
+      const KM_PER_DEG_LNG = 111.32 * Math.cos((centerCoord[0] * Math.PI) / 180);
+      const baseKm = 0.4 + (aqi / 400) * 2.0;
+      const majorKm = baseKm * (1 + windSpeed / 25);
+      const minorKm = baseKm * 0.38;
+      const downwindDeg = (windDeg + 180) % 360;
+      const downwindRad = (downwindDeg * Math.PI) / 180;
+      const cosB = Math.cos(downwindRad);
+      const sinB = Math.sin(downwindRad);
+      const upwindShiftKm = majorKm * 0.25;
+      const ellipsePoints: [number, number][] = [];
+      for (let i = 0; i <= 48; i++) {
+        const theta = (i / 48) * 2 * Math.PI;
+        const ex = majorKm * Math.cos(theta);
+        const ey = minorKm * Math.sin(theta);
+        const dxKm = ex * sinB - ey * cosB + upwindShiftKm * sinB;
+        const dyKm = ex * cosB + ey * sinB + upwindShiftKm * cosB;
+        ellipsePoints.push([
+          centerCoord[0] + dyKm / KM_PER_DEG_LAT,
+          centerCoord[1] + dxKm / KM_PER_DEG_LNG,
+        ]);
+      }
+
+      const circle = L.polygon(ellipsePoints, {
         color: borderColor,
-        weight: isSelected ? 2.5 : 1.2,
-        opacity: isSelected ? (theme === 'dark' ? 0.9 : 0.75) : (theme === 'dark' ? 0.45 : 0.3),
+        weight: isSelected ? 2.5 : 1.5,
+        opacity: isSelected ? (theme === 'dark' ? 0.9 : 0.75) : (theme === 'dark' ? 0.55 : 0.4),
         fillColor: borderColor,
-        fillOpacity: isSelected ? (theme === 'dark' ? 0.18 : 0.1) : (theme === 'dark' ? 0.08 : 0.04),
+        fillOpacity: isSelected ? (theme === 'dark' ? 0.22 : 0.15) : (theme === 'dark' ? 0.10 : 0.06),
+        dashArray: '7 4',
       }).addTo(map);
 
       circlesRef.current[cluster.cluster_id] = circle;
