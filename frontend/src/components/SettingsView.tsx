@@ -1,9 +1,10 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings, Languages, Moon, Sun, Type, LogOut, UserCheck, Check,
   Lock, KeyRound, PanelLeftOpen, AlertTriangle, RotateCcw,
   ShieldAlert, Sliders, Compass, Play, Database, MapPin, Clock, Wind,
+  Sparkles, Key, Eye, EyeOff, ExternalLink,
 } from 'lucide-react';
 import { useSettings, AppLanguage, FontSizeScale, WardScope, PriorityWeights, CPCB_BASELINE_WEIGHTS } from '../context/SettingsContext';
 import { useTheme } from '../context/ThemeContext';
@@ -125,13 +126,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   isSidebarCollapsed = false,
   onStartTour 
 }) => {
-  const { language, setLanguage, fontSize, setFontSize, user, logout, login, t, wardScope, setWardScope, slaWarningHours, setSlaWarningHours, caaqmsTriggerAqi, setCaaqmsTriggerAqi, priorityWeights, setPriorityWeights } = useSettings();
+  const { 
+    language, setLanguage, fontSize, setFontSize, user, logout, login, t, 
+    wardScope, setWardScope, slaWarningHours, setSlaWarningHours, 
+    caaqmsTriggerAqi, setCaaqmsTriggerAqi, priorityWeights, setPriorityWeights,
+    geminiApiKey, hasGeminiKey, maskedGeminiKey, setGeminiApiKey 
+  } = useSettings();
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const [localAqi, setLocalAqi] = useState(String(caaqmsTriggerAqi));
+  const [localApiKey, setLocalApiKey] = useState(geminiApiKey || '');
+  const [showKeyPassword, setShowKeyPassword] = useState(false);
+  const [isSavingKey, setIsSavingKey] = useState(false);
 
   const canvas    = isDark ? 'bg-[#090D16]'  : 'bg-[#FAFAFA]';
   const card      = isDark ? 'bg-[#111827] border border-slate-800' : 'bg-white border border-zinc-200';
@@ -399,6 +408,109 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${isDark?'border-slate-700 text-slate-300 hover:bg-slate-800':'border-zinc-300 text-slate-700 hover:bg-zinc-100'}`}>
               <RotateCcw className="w-3 h-3 text-blue-500" />Restore CPCB Baseline Weights
             </motion.button>
+          </div>
+        </section>
+
+        {/* 7. Gemini AI Integration Section */}
+        <section className={sectionHd}>
+          <div className={`flex items-center justify-between pb-3 border-b ${divider}`}>
+            <SectionHeaderInline
+              icon={<Sparkles className="w-4 h-4" />}
+              iconBg={isDark ? 'bg-amber-950/70 border-amber-800/80 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-600'}
+              title="Google Gemini AI Engine Integration"
+              sub="Connect your Google AI Studio API key to power real-time CPCB Section 31A statutory directives & enforcement protocols."
+            />
+            {hasGeminiKey ? (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded font-semibold shrink-0 ml-3 bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Connected
+              </span>
+            ) : (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded font-semibold shrink-0 ml-3 bg-amber-100 dark:bg-amber-950 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300">
+                Key Required
+              </span>
+            )}
+          </div>
+
+          <div className="pt-4 space-y-4">
+            <div className={`p-4 rounded-lg border ${isDark ? 'bg-[#0B1120] border-slate-800' : 'bg-zinc-50 border-zinc-200'} space-y-3`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <label className={`text-xs font-semibold ${textPri} flex items-center gap-1.5 font-mono`}>
+                  <Key className="w-3.5 h-3.5 text-amber-500" />
+                  Gemini API Key
+                </label>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 font-medium"
+                >
+                  <span>Get Free Key from Google AI Studio</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type={showKeyPassword ? 'text' : 'password'}
+                    value={localApiKey}
+                    onChange={e => setLocalApiKey(e.target.value)}
+                    placeholder="Enter your AIzaSy... key"
+                    className={`w-full px-3 py-2 pr-10 rounded-lg border text-xs font-mono ${inputBg} focus:outline-none focus:ring-2 focus:ring-amber-500`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyPassword(prev => !prev)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                  >
+                    {showKeyPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  disabled={isSavingKey || !localApiKey.trim()}
+                  onClick={async () => {
+                    if (!localApiKey.trim() || localApiKey.trim().length < 8) {
+                      toast('Please enter a valid Gemini API key');
+                      return;
+                    }
+                    setIsSavingKey(true);
+                    try {
+                      await setGeminiApiKey(localApiKey.trim());
+                      toast('Gemini API Key Connected & Saved');
+                    } catch {
+                      toast('Failed to save key');
+                    } finally {
+                      setIsSavingKey(false);
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 disabled:opacity-50 text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+                >
+                  {isSavingKey ? <RotateCcw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  <span>Save &amp; Connect Key</span>
+                </motion.button>
+              </div>
+
+              {maskedGeminiKey && (
+                <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400 pt-1">
+                  <span>Active key on server: <strong className="text-emerald-500">{maskedGeminiKey}</strong></span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setLocalApiKey('');
+                      await setGeminiApiKey('');
+                      toast('API key disconnected');
+                    }}
+                    className="text-rose-500 hover:underline cursor-pointer"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 

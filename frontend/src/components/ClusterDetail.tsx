@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   IncidentCluster, 
@@ -28,13 +28,19 @@ import {
   RotateCw,
   ChevronDown,
   ChevronUp,
-  Map
+  Map,
+  Key,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  X,
 } from 'lucide-react';
 import { 
   generateStatutoryRecommendation, 
   StatutoryRecommendation,
   getFallbackRecommendation 
 } from '../services/geminiService';
+import { useSettings } from '../context/SettingsContext';
 
 interface ClusterDetailProps {
   cluster: IncidentCluster;
@@ -115,9 +121,19 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
   const isResolved = cluster.status === 'resolved';
   const isCritical = cluster.hours_remaining < 6;
 
+  const { hasGeminiKey, geminiApiKey, maskedGeminiKey, setGeminiApiKey } = useSettings();
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(geminiApiKey || '');
+  const [showKeyPassword, setShowKeyPassword] = useState(false);
+  const [isSavingKey, setIsSavingKey] = useState(false);
+  const [keyModalError, setKeyModalError] = useState<string | null>(null);
+  const [generationSource, setGenerationSource] = useState<'ai' | 'fallback' | null>(null);
+  const [lastGenTimestamp, setLastGenTimestamp] = useState<string | null>(null);
+
   // Handle generating recommendation via Gemini API
-  const handleGenerateRecommendation = async () => {
+  const handleGenerateRecommendation = async (overrideKey?: string) => {
     setIsGenerating(true);
+    setKeyModalError(null);
     try {
       const rec = await generateStatutoryRecommendation({
         category: cluster.category,
@@ -125,20 +141,64 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
         aqi: cluster.avg_aqi,
         complaint_count: cluster.complaint_count,
         severity: cluster.hours_remaining < 6 ? 'high' : 'medium'
-      });
+      }, overrideKey);
       setRecommendation(rec);
-    } catch (err) {
-      console.warn('Using deterministic fallback recommendation:', err);
-      const fallback = getFallbackRecommendation({
-        category: cluster.category,
-        location: cluster.ward,
-        aqi: cluster.avg_aqi,
-        complaint_count: cluster.complaint_count,
-        severity: cluster.hours_remaining < 6 ? 'high' : 'medium'
-      });
-      setRecommendation(fallback);
+      setEditedAgency(rec.targetAgency);
+      setEditedDirective(rec.directive);
+      setEditedProvision(rec.legalProvision);
+      setIsEditing(false);
+      setGenerationSource(rec.isFallback ? 'fallback' : 'ai');
+      setLastGenTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    } catch (err: any) {
+      if (err?.requiresApiKey || err?.name === 'GeminiAuthError') {
+        setKeyModalError(err.message || 'Please connect your Gemini API key to proceed.');
+        setTempApiKey(geminiApiKey || '');
+        setShowApiKeyModal(true);
+      } else {
+        console.warn('Using deterministic fallback recommendation:', err);
+        const fallback = getFallbackRecommendation({
+          category: cluster.category,
+          location: cluster.ward,
+          aqi: cluster.avg_aqi,
+          complaint_count: cluster.complaint_count,
+          severity: cluster.hours_remaining < 6 ? 'high' : 'medium'
+        });
+        setRecommendation(fallback);
+        setGenerationSource('fallback');
+        setLastGenTimestamp(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      }
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleRegenerateClick = () => {
+    if (!hasGeminiKey) {
+      setKeyModalError(null);
+      setTempApiKey(geminiApiKey || '');
+      setShowApiKeyModal(true);
+      return;
+    }
+    handleGenerateRecommendation();
+  };
+
+  const handleSaveAndGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tempApiKey.trim() || tempApiKey.trim().length < 8) {
+      setKeyModalError('Please enter a valid Gemini API key (e.g. AIzaSy...)');
+      return;
+    }
+    setIsSavingKey(true);
+    setKeyModalError(null);
+    try {
+      await setGeminiApiKey(tempApiKey.trim());
+      setShowApiKeyModal(false);
+      // Immediately run the recommendation generation with the new key!
+      await handleGenerateRecommendation(tempApiKey.trim());
+    } catch (err: any) {
+      setKeyModalError(err?.message || 'Failed to connect API key.');
+    } finally {
+      setIsSavingKey(false);
     }
   };
 
@@ -350,17 +410,39 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
 
         {/* 2. "Generate Action Recommendation" Workflow */}
         <div className="bg-white dark:bg-[#1D1916] rounded-lg border border-slate-200 dark:border-[#2D2825] overflow-hidden shadow-2xs">
-          {/* Header Strip with Action Trigger */}
+          {/* Header Strip with Action Trigger & API Key Status */}
           <div className="p-3 bg-slate-50 dark:bg-[#151210] border-b border-slate-200 dark:border-[#2D2825] flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <h3 className="text-xs font-bold text-slate-900 dark:text-[#F1F5F9] font-mono">AI Enforcement Directive</h3>
+              
+              {hasGeminiKey ? (
+                <button
+                  type="button"
+                  onClick={() => { setKeyModalError(null); setTempApiKey(geminiApiKey); setShowApiKeyModal(true); }}
+                  title={`Gemini API Key Connected (${maskedGeminiKey || 'Active'}) — Click to change`}
+                  className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Key className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Key Connected</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setKeyModalError(null); setTempApiKey(geminiApiKey); setShowApiKeyModal(true); }}
+                  title="Click to connect your Google Gemini API Key"
+                  className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/80 hover:bg-amber-100 dark:hover:bg-amber-900/50 flex items-center gap-1 cursor-pointer transition-colors animate-pulse"
+                >
+                  <Key className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+                  <span>Connect Key</span>
+                </button>
+              )}
             </div>
 
             <button
               type="button"
               data-tour="generate-directive-btn"
-              onClick={handleGenerateRecommendation}
+              onClick={handleRegenerateClick}
               disabled={isGenerating}
               className="px-3 py-1.5 rounded bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 disabled:opacity-50 text-white text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer touch-manipulation"
             >
@@ -380,7 +462,7 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
             <div className="p-4 space-y-2.5 animate-pulse bg-slate-50/50 dark:bg-[#151210]/50">
               <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-[#94A3B8]">
                 <RotateCw className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />
-                <span>Generating statutory Section 31A protocol...</span>
+                <span>Generating statutory Section 31A protocol via Gemini AI...</span>
               </div>
               
               <div className="p-2.5 bg-white dark:bg-[#1D1916] rounded border border-slate-200 dark:border-[#2D2825] space-y-1.5">
@@ -393,11 +475,24 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
           {/* Structured, Editable Action Card */}
           {!isGenerating && recommendation && (
             <div className="p-3.5 space-y-3 bg-white dark:bg-[#1D1916] text-xs">
-              <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-[#2D2825]">
-                <span className="font-mono text-xs text-slate-500 dark:text-[#94A3B8] flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400"></span>
-                  AI Directive Draft
-                </span>
+              <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-[#2D2825] flex-wrap gap-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-xs text-slate-500 dark:text-[#94A3B8] flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400"></span>
+                    AI Directive Draft
+                  </span>
+                  {generationSource === 'ai' && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/70 flex items-center gap-1 font-semibold">
+                      <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Gemini Live AI {lastGenTimestamp ? `(${lastGenTimestamp})` : ''}
+                    </span>
+                  )}
+                  {generationSource === 'fallback' && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-100 dark:bg-[#151210] text-slate-600 dark:text-[#94A3B8] border border-slate-200 dark:border-[#2D2825]">
+                      Statutory Baseline {lastGenTimestamp ? `(${lastGenTimestamp})` : ''}
+                    </span>
+                  )}
+                </div>
 
                 <button
                   type="button"
@@ -672,6 +767,123 @@ export const ClusterDetail: React.FC<ClusterDetailProps> = ({
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Connect Gemini API Key Modal */}
+      <AnimatePresence>
+        {showApiKeyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-[#1D1916] border border-slate-200 dark:border-[#2D2825] rounded-xl shadow-2xl max-w-md w-full p-5 space-y-4 text-slate-900 dark:text-[#F1F5F9]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <Key className="w-4.5 h-4.5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold font-mono">Connect Google Gemini API Key</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-[#94A3B8]">
+                      Enables real-time, statutory-grade field enforcement directives tailored to this incident cluster.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowApiKeyModal(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#252018] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {keyModalError && (
+                <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-rose-500" />
+                  <span>{keyModalError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveAndGenerate} className="space-y-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-[#94A3B8] font-mono">
+                      Gemini API Key
+                    </label>
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[11px] text-amber-600 dark:text-amber-400 hover:underline font-medium flex items-center gap-1"
+                    >
+                      <span>Get free key</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showKeyPassword ? 'text' : 'password'}
+                      value={tempApiKey}
+                      onChange={e => setTempApiKey(e.target.value)}
+                      placeholder="AIzaSy..."
+                      className="w-full px-3 py-2 pr-10 text-xs font-mono rounded-lg border border-slate-300 dark:border-[#2D2825] bg-slate-50 dark:bg-[#151210] text-slate-900 dark:text-[#F1F5F9] focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowKeyPassword(prev => !prev)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                    >
+                      {showKeyPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  {maskedGeminiKey && !tempApiKey && (
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono mt-1 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      Currently configured: {maskedGeminiKey}
+                    </p>
+                  )}
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#151210] border border-slate-200 dark:border-[#2D2825] text-[11px] text-slate-600 dark:text-[#94A3B8] space-y-1">
+                  <p>
+                    Your key is saved locally in your browser and synced with the local backend proxy to authenticate with Google Gemini models.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKeyModal(false)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-[#2D2825] text-xs font-medium text-slate-700 dark:text-[#94A3B8] hover:bg-slate-100 dark:hover:bg-[#252018] cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingKey || !tempApiKey.trim()}
+                    className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                  >
+                    {isSavingKey ? (
+                      <>
+                        <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Connecting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Connect &amp; Regenerate</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

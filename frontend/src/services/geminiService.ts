@@ -75,30 +75,105 @@ export function getFallbackRecommendation(params: RecommendationParams): Statuto
   };
 }
 
-export async function generateStatutoryRecommendation(
-  params: RecommendationParams
-): Promise<StatutoryRecommendation> {
+export const GEMINI_STORAGE_KEY = 'airsense-gemini-key';
+
+export function getStoredGeminiKey(): string {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem(GEMINI_STORAGE_KEY) || '';
+}
+
+export async function saveGeminiKey(apiKey: string): Promise<{ success: boolean; message: string }> {
+  const clean = (apiKey || '').trim();
+  if (typeof window !== 'undefined') {
+    if (clean) {
+      localStorage.setItem(GEMINI_STORAGE_KEY, clean);
+    } else {
+      localStorage.removeItem(GEMINI_STORAGE_KEY);
+    }
+  }
+
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch('/api/config/gemini-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: clean }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to save key on server');
+    }
+    return await res.json();
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Network error saving key' };
+  }
+}
+
+export async function checkGeminiKeyStatus(): Promise<{ configured: boolean; maskedKey?: string }> {
+  try {
+    const res = await fetch('/api/config/gemini-key');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.configured) return data;
+    }
+  } catch {
+    // fallback to local check
+  }
+  const localKey = getStoredGeminiKey();
+  return {
+    configured: Boolean(localKey && localKey.length > 8),
+    maskedKey: localKey ? `${localKey.slice(0, 4)}••••••••${localKey.slice(-4)}` : '',
+  };
+}
+
+export class GeminiAuthError extends Error {
+  requiresApiKey: boolean;
+  constructor(message: string) {
+    super(message);
+    this.name = 'GeminiAuthError';
+    this.requiresApiKey = true;
+  }
+}
+
+export async function generateStatutoryRecommendation(
+  params: RecommendationParams,
+  overrideKey?: string
+): Promise<StatutoryRecommendation> {
+  const activeKey = overrideKey || getStoredGeminiKey();
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 18000);
+
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (activeKey) {
+      headers['x-gemini-api-key'] = activeKey;
+    }
 
     const response = await fetch('/api/recommendation', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
+      headers,
+      body: JSON.stringify({
+        ...params,
+        ...(activeKey ? { apiKey: activeKey } : {}),
+      }),
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
+    const data = await response.json().catch(() => ({}));
+
+    if (response.status === 401 || data?.requiresApiKey) {
+      throw new GeminiAuthError(data?.message || 'Gemini API key is required to generate real-time AI protocol.');
     }
 
-    const data = await response.json();
-    if (data && !data.fallback && data.directive && data.targetAgency) {
+    if (!response.ok) {
+      throw new Error(data?.error || data?.message || `Server returned ${response.status}`);
+    }
+
+    if (data && data.directive && data.targetAgency) {
       return {
         targetAgency: data.targetAgency,
         directive: data.directive,
@@ -109,9 +184,13 @@ export async function generateStatutoryRecommendation(
       };
     }
 
-    throw new Error('Incomplete response structure');
-  } catch (err) {
-    console.info('Using statutory municipal recommendation fallback:', err);
-    return getFallbackRecommendation(params);
+    throw new Error('Incomplete response structure from AI model');
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err instanceof GeminiAuthError || err?.requiresApiKey) {
+      throw err;
+    }
+    console.warn('Gemini recommendation generation issue:', err);
+    throw err;
   }
 }

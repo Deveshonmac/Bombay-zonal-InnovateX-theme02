@@ -276,7 +276,7 @@ Provide the immediate operational field protocol strictly in this format:
 """
 
         res = client.models.generate_content(
-            model="gemini-3.6-flash",
+            model="gemini-3.8-flash",
             contents=prompt
         )
         if res and res.text and len(res.text) > 100:

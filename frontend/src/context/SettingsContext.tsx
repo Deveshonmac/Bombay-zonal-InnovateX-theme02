@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type AppLanguage = 'en' | 'mr' | 'hi';
 export type FontSizeScale = 'normal' | 'large' | 'xl';
@@ -56,6 +56,10 @@ interface SettingsContextType {
   setAiStrictness: (val: 'statutory' | 'advisory' | 'emergency') => void;
   highContrast: boolean;
   setHighContrast: (val: boolean) => void;
+  geminiApiKey: string;
+  hasGeminiKey: boolean;
+  maskedGeminiKey: string;
+  setGeminiApiKey: (key: string) => Promise<boolean>;
 }
 
 const DEFAULT_OFFICER: OfficerProfile = {
@@ -266,6 +270,10 @@ const SettingsContext = createContext<SettingsContextType>({
   autoRefreshRate: 30, setAutoRefreshRate: () => {},
   aiStrictness: 'statutory', setAiStrictness: () => {},
   highContrast: false, setHighContrast: () => {},
+  geminiApiKey: '',
+  hasGeminiKey: false,
+  maskedGeminiKey: '',
+  setGeminiApiKey: async () => false,
 });
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -368,6 +376,58 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [aiStrictness, setAiStrictness] = useState<'statutory' | 'advisory' | 'emergency'>('statutory');
   const [highContrast, setHighContrast] = useState(false);
 
+  const [geminiApiKey, setGeminiApiKeyState] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('airsense-gemini-key') || '';
+    }
+    return '';
+  });
+  const [hasServerKey, setHasServerKey] = useState<boolean>(false);
+  const [serverMaskedKey, setServerMaskedKey] = useState<string>('');
+
+  useEffect(() => {
+    fetch('/api/config/gemini-key')
+      .then(r => r.json())
+      .then(d => {
+        if (d?.configured) {
+          setHasServerKey(true);
+          if (d?.maskedKey) setServerMaskedKey(d.maskedKey);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const hasGeminiKey = Boolean(hasServerKey || (geminiApiKey && geminiApiKey.length > 8));
+  const maskedGeminiKey = serverMaskedKey || (geminiApiKey ? `${geminiApiKey.slice(0, 4)}••••••••${geminiApiKey.slice(-4)}` : '');
+
+  const setGeminiApiKey = async (key: string): Promise<boolean> => {
+    const clean = (key || '').trim();
+    setGeminiApiKeyState(clean);
+    if (typeof window !== 'undefined') {
+      if (clean) {
+        localStorage.setItem('airsense-gemini-key', clean);
+      } else {
+        localStorage.removeItem('airsense-gemini-key');
+      }
+    }
+    try {
+      const res = await fetch('/api/config/gemini-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: clean }),
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setHasServerKey(true);
+        if (d?.maskedKey) setServerMaskedKey(d.maskedKey);
+        return true;
+      }
+      return false;
+    } catch {
+      return Boolean(clean.length > 8);
+    }
+  };
+
   const t = (key: string, defaultText?: string): string => {
     const langDict = TRANSLATIONS[language] || TRANSLATIONS.en;
     if (langDict[key]) return langDict[key];
@@ -389,6 +449,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       autoRefreshRate, setAutoRefreshRate,
       aiStrictness, setAiStrictness,
       highContrast, setHighContrast,
+      geminiApiKey,
+      hasGeminiKey,
+      maskedGeminiKey,
+      setGeminiApiKey,
     }}>
       {children}
     </SettingsContext.Provider>
