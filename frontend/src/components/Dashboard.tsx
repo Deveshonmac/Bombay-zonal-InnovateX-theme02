@@ -36,7 +36,14 @@ import {
   ResolutionRecord
 } from '../types';
 import { INITIAL_CLUSTERS, INITIAL_AUDIT_LOGS } from '../data/mockData';
-import { fetchLiveClusters } from '../services/clusterService';
+import {
+  fetchLiveClusters,
+  resolveClusterBackend,
+  extractBackendClusterId,
+  fetchBackendActions,
+  seedRandomComplaints,
+  BackendActionRecord,
+} from '../services/clusterService';
 
 export const Dashboard: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -45,6 +52,10 @@ export const Dashboard: React.FC = () => {
   const [dataSource, setDataSource] = useState<'live' | 'mock'>('mock');
   const [auditLogs, setAuditLogs] = useState<AuditActionLog[]>(INITIAL_AUDIT_LOGS);
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
+  const [backendActions, setBackendActions] = useState<BackendActionRecord[]>([]);
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [seedToast, setSeedToast] = useState<string | null>(null);
+  const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
   
   // Navigation tab state: 'triage' | 'queue' | 'impact_log' | 'audit_logs' | 'system_health'
   const [currentTab, setCurrentTab] = useState<NavTab>('triage');
@@ -179,15 +190,46 @@ export const Dashboard: React.FC = () => {
     typeof window !== 'undefined' ? window.innerWidth >= 768 : true
   );
 
-  // Try to load live DBSCAN clusters from Python backend; fall back to mock data silently
+  // Live polling: pull clusters + impact ledger from Python backend every 8s.
+  // Falls back to mock data silently when the backend is offline.
   useEffect(() => {
-    fetchLiveClusters().then(result => {
-      if (result.source === 'live' && result.clusters.length > 0) {
-        setClusters(result.clusters);
+    let cancelled = false;
+
+    const syncOnce = async () => {
+      const [clustersResult, actions] = await Promise.all([
+        fetchLiveClusters(),
+        fetchBackendActions(),
+      ]);
+      if (cancelled) return;
+
+      if (clustersResult.source === 'live' && clustersResult.clusters.length > 0) {
+        setClusters(prev => {
+          // Preserve local-only state (resolution record, admin_action_label overrides) when the
+          // backend returns the same cluster still open. If backend says resolved, backend wins.
+          const prevById = new Map(prev.map(c => [c.cluster_id, c]));
+          return clustersResult.clusters.map(fresh => {
+            const existing = prevById.get(fresh.cluster_id);
+            if (!existing) return fresh;
+            if (fresh.status === 'resolved') return { ...fresh, resolution: existing.resolution };
+            if (existing.status === 'resolved' && existing.resolution) return existing;
+            return { ...fresh, resolution: existing.resolution };
+          });
+        });
         setDataSource('live');
-        setSelectedClusterId(result.clusters[0]?.cluster_id ?? null);
+        setSelectedClusterId(prev => prev ?? clustersResult.clusters[0]?.cluster_id ?? null);
       }
-    });
+
+      setBackendActions(actions);
+      setLastSyncAt(new Date());
+    };
+
+    // Immediate fetch, then poll every 8s
+    syncOnce();
+    const interval = setInterval(syncOnce, 8000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -476,6 +518,24 @@ export const Dashboard: React.FC = () => {
       })
     );
 
+    // Persist to backend so the Impact Ledger survives a reload and reflects live DBSCAN data.
+    // Only valid for live clusters (CLUST-LIVE-##); mock clusters stay session-local.
+    const backendId = extractBackendClusterId(clusterId);
+    if (backendId !== null) {
+      resolveClusterBackend(backendId, {
+        action_taken: resolution.action_summary,
+        officer_notes: officerRemarks,
+        aqi_before: resolution.pre_intervention_aqi,
+        aqi_after: resolution.post_intervention_aqi,
+      }).then(action => {
+        if (action) {
+          setBackendActions(prev => [action, ...prev.filter(a => a.id !== action.id)]);
+          // Refetch actions list to keep aggregates in sync
+          fetchBackendActions().then(latest => setBackendActions(latest));
+        }
+      });
+    }
+
     // Append to Audit Logs View
     const resolutionLog: AuditActionLog = {
       id: `AUD-${Math.floor(8830 + Math.random() * 900)}`,
@@ -491,6 +551,45 @@ export const Dashboard: React.FC = () => {
     };
 
     setAuditLogs(prev => [resolutionLog, ...prev]);
+  };
+
+  // Seed fresh synthetic complaints across 3-5 randomly chosen Pune zones,
+  // then trigger re-clustering on the backend. Produces DIFFERENT clusters each call.
+  const handleSeedFreshData = async () => {
+    if (isSeeding) return;
+    setIsSeeding(true);
+    setSeedToast('Generating synthetic complaints across random Pune zones…');
+    try {
+      const result = await seedRandomComplaints(180);
+      if (result.ingested > 0) {
+        setSeedToast(
+          `Seeded ${result.ingested} new reports across ${result.zones_used.length} zones — re-running DBSCAN…`
+        );
+        // Give backend a moment to finish clustering, then refetch
+        setTimeout(async () => {
+          const [clustersResult, actions] = await Promise.all([
+            fetchLiveClusters(),
+            fetchBackendActions(),
+          ]);
+          if (clustersResult.source === 'live') {
+            setClusters(clustersResult.clusters);
+            setDataSource('live');
+            setSelectedClusterId(clustersResult.clusters[0]?.cluster_id ?? null);
+          }
+          setBackendActions(actions);
+          setLastSyncAt(new Date());
+          setSeedToast(
+            `Live: ${clustersResult.clusters.length} new hotspots clustered from ${result.ingested} reports.`
+          );
+          setTimeout(() => setSeedToast(null), 3500);
+        }, 1200);
+      } else {
+        setSeedToast('Backend offline — could not seed. Start FastAPI and retry.');
+        setTimeout(() => setSeedToast(null), 4000);
+      }
+    } finally {
+      setIsSeeding(false);
+    }
   };
 
   // Manual Officer Priority Override Handler
@@ -564,7 +663,23 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="flex h-screen w-screen bg-slate-100 dark:bg-[#151210] text-slate-900 dark:text-[#F1F5F9] overflow-hidden font-sans select-none transition-colors">
-      
+
+      {/* Seed / Backend Sync Toast */}
+      <AnimatePresence>
+        {seedToast && (
+          <motion.div
+            key="seed-toast"
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-[#1D1916] dark:bg-amber-500 text-amber-100 dark:text-[#1D1916] text-xs font-mono font-semibold px-4 py-2.5 rounded-lg shadow-2xl border border-amber-500/40 dark:border-amber-300 flex items-center gap-2"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 dark:bg-[#1D1916] animate-pulse" />
+            <span>{seedToast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* 1. Left Sidebar: Resizable with Smooth Width Transitions & Snap-to-Collapse */}
       <motion.aside
         animate={{
@@ -599,6 +714,10 @@ export const Dashboard: React.FC = () => {
                 setMobileTriageView('map');
               }
             }}
+            onSeedData={handleSeedFreshData}
+            isSeeding={isSeeding}
+            lastSyncAt={lastSyncAt}
+            dataSource={dataSource}
             criticalCount={criticalCount}
             openCount={openCount}
             totalComplaints={totalComplaints}
@@ -720,7 +839,7 @@ export const Dashboard: React.FC = () => {
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-sm text-slate-900 dark:text-white">AirSense</span>
+              <span className="font-semibold text-sm text-slate-900 dark:text-white">VayuMan</span>
               <span className="text-[10px] font-mono px-1.5 py-0.5 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 rounded font-medium">
                 B2G
               </span>
@@ -772,6 +891,7 @@ export const Dashboard: React.FC = () => {
                     onInspectCluster={handleOpenDetail}
                     onToggleSidebar={() => setIsLeftSidebarCollapsed(prev => !prev)}
                     isSidebarCollapsed={isLeftSidebarCollapsed}
+                    backendActions={backendActions}
                   />
                 </div>
               </ErrorBoundary>

@@ -10,7 +10,9 @@ import {
   Sun,
   Moon,
   PanelLeftClose,
-  Settings
+  Settings,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { NavTab } from '../types';
 import { useTheme } from '../context/ThemeContext';
@@ -28,6 +30,10 @@ interface SidebarProps {
   onToggleCollapse?: () => void;
   isCollapsed?: boolean;
   onStartTour?: () => void;
+  onSeedData?: () => void;
+  isSeeding?: boolean;
+  lastSyncAt?: Date | null;
+  dataSource?: 'live' | 'mock';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -40,7 +46,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen = false,
   onMobileClose,
   onToggleCollapse,
-  onStartTour
+  onStartTour,
+  onSeedData,
+  isSeeding = false,
+  lastSyncAt = null,
+  dataSource = 'mock'
 }) => {
   const { theme, toggleTheme } = useTheme();
   const { t, user, language } = useSettings();
@@ -99,12 +109,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 border-b border-[#EAE2D8] dark:border-[#2D2825] flex items-center justify-between bg-[#FFFDF9] dark:bg-[#1D1916] transition-colors">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded bg-amber-600 dark:bg-amber-500 flex items-center justify-center text-white shrink-0 shadow-xs">
-                <Shield className="w-3.5 h-3.5 text-white" />
+              <div className="w-9 h-9 rounded-lg bg-[#0A1F3D] flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                <img
+                  src="/vayuman-logo.png"
+                  alt="VayuMan"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    // Fallback to Shield icon if logo file missing
+                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    const sibling = e.currentTarget.nextElementSibling as HTMLElement | null;
+                    if (sibling) sibling.style.display = 'flex';
+                  }}
+                />
+                <div className="w-full h-full items-center justify-center bg-amber-600 dark:bg-amber-500" style={{ display: 'none' }}>
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-sm tracking-tight text-[#1C120A] dark:text-[#FEF3E2]">AirSense</span>
+                  <span className="font-semibold text-sm tracking-tight text-[#1C120A] dark:text-[#FEF3E2]">VayuMan</span>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 rounded font-medium">
                     B2G
                   </span>
@@ -197,7 +220,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="bg-[#F5EDE0] dark:bg-[#151210] p-2.5 rounded border border-[#EAE2D8] dark:border-[#2D2825] space-y-1.5 text-[11px] font-mono">
               <div className="flex items-center justify-between">
                 <span className="text-[#9B8472] dark:text-[#B89880]">{t('nav.sameer_feed', 'SAMEER Feed:')}</span>
-                <span className="text-amber-700 dark:text-amber-400 font-semibold">{t('nav.live', 'Live')}</span>
+                <span className={`font-semibold flex items-center gap-1 ${
+                  dataSource === 'live'
+                    ? 'text-emerald-700 dark:text-emerald-400'
+                    : 'text-amber-700 dark:text-amber-400'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    dataSource === 'live' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                  }`} />
+                  {dataSource === 'live' ? 'LIVE' : 'MOCK'}
+                </span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -209,7 +241,48 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="text-[#9B8472] dark:text-[#B89880]">{t('nav.citizen_tickets', 'Tickets:')}</span>
                 <span className="text-[#1C120A] dark:text-[#FEF3E2] font-medium">{totalComplaints} {t('nav.total', 'total')}</span>
               </div>
+
+              {lastSyncAt && (
+                <div className="flex items-center justify-between pt-1 border-t border-[#EAE2D8] dark:border-[#2D2825]">
+                  <span className="text-[#9B8472] dark:text-[#B89880]">Last sync:</span>
+                  <span className="text-[#1C120A] dark:text-[#FEF3E2] font-medium">
+                    {lastSyncAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Synthetic Data Seeding — generates fresh clusters each click */}
+            {onSeedData && (
+              <div className="mt-2.5">
+                <button
+                  type="button"
+                  onClick={onSeedData}
+                  disabled={isSeeding}
+                  title="Ingest a fresh batch of synthetic complaints across random Pune zones and re-run DBSCAN"
+                  className={`w-full flex items-center justify-center gap-2 px-2.5 py-2 rounded border text-[11px] font-mono font-semibold transition-all ${
+                    isSeeding
+                      ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 cursor-wait'
+                      : 'bg-amber-500 hover:bg-amber-600 border-amber-600 text-white shadow-xs hover:shadow cursor-pointer'
+                  }`}
+                >
+                  {isSeeding ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Seeding + Re-clustering…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Seed Fresh Reports</span>
+                    </>
+                  )}
+                </button>
+                <p className="text-[9.5px] text-[#9B8472] dark:text-[#786050] font-mono mt-1 px-1 leading-tight">
+                  Generates 150-200 synthetic complaints across 3-5 random Pune zones, then re-runs DBSCAN clustering on backend.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

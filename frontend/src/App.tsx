@@ -11,7 +11,7 @@ import { SettingsProvider } from './context/SettingsContext';
 
 export default function App() {
   return (
-    <ErrorBoundary fallbackTitle="AirSense System Level Error">
+    <ErrorBoundary fallbackTitle="VayuMan System Level Error">
       <ThemeProvider>
         <SettingsProvider>
           <Dashboard />

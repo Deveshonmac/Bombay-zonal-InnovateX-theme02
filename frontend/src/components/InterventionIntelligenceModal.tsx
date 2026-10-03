@@ -323,10 +323,10 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
   // Mailto forward
   const handleMailto = () => {
     const subject = encodeURIComponent(
-      `AirSense Enforcement Directive — ${cluster.title} [Priority Score: ${cluster.priority_score}]`
+      `VayuMan Enforcement Directive — ${cluster.title} [Priority Score: ${cluster.priority_score}]`
     );
     const body = encodeURIComponent(
-      `AIRSENSE INTERVENTION DIRECTIVE\n` +
+      `VAYUMAN INTERVENTION DIRECTIVE\n` +
       `Generated: ${new Date().toLocaleString('en-IN')}\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
       `INCIDENT: ${cluster.title}\n` +
@@ -341,7 +341,7 @@ export const InterventionIntelligenceModal: React.FC<InterventionIntelligenceMod
       `WIND CONDITIONS: ${windDir} at ${windSpeed} km/h\n` +
       `ESTIMATED AFFECTED POPULATION: ~${affectedPop.toLocaleString('en-IN')}\n\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `Sent via AirSense B2G Triage Platform — PMC Pune`
+      `Sent via VayuMan B2G Triage Platform — PMC Pune`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };

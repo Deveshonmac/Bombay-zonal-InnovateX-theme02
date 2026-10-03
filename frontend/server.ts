@@ -24,7 +24,7 @@ const ai = new GoogleGenAI({
 
 const PYTHON_BACKEND = 'http://localhost:8000';
 
-// Proxy: GET /api/clusters → Python FastAPI /api/clusters/priority
+// Proxy: GET /api/clusters → Python FastAPI /api/clusters/priority (priority-sorted)
 app.get('/api/clusters', async (_req, res) => {
   try {
     const r = await fetch(`${PYTHON_BACKEND}/api/clusters/priority`);
@@ -45,6 +45,31 @@ app.post('/api/clusters/trigger', async (_req, res) => {
     res.json(data);
   } catch (err: any) {
     res.status(503).json({ error: 'Python DBSCAN backend offline', fallback: true });
+  }
+});
+
+// Generic passthrough proxy for every other /api/* route to the FastAPI backend.
+// Keeps the frontend fetch calls simple (relative URLs) and avoids CORS entirely.
+app.use('/api', async (req, res) => {
+  const targetUrl = `${PYTHON_BACKEND}/api${req.url}`;
+  try {
+    const init: any = {
+      method: req.method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
+      init.body = JSON.stringify(req.body);
+    }
+    const r = await fetch(targetUrl, init);
+    const text = await r.text();
+    res.status(r.status);
+    try {
+      res.json(JSON.parse(text));
+    } catch {
+      res.send(text);
+    }
+  } catch (err: any) {
+    res.status(503).json({ error: `Python backend offline for ${targetUrl}`, fallback: true });
   }
 });
 

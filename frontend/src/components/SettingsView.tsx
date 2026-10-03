@@ -409,7 +409,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
             <div className={`p-4 rounded-lg border ${isDark?'bg-[#0B1120] border-slate-800':'bg-zinc-50 border-zinc-200'}`}>
               <div className={`text-[11px] font-semibold ${textSec} mb-1`}>Workflow Walkthrough</div>
-              <p className={`text-[11px] ${textSec} mb-3 leading-relaxed`}>Step-by-step interactive tour of the AirSense B2G triage pipeline — from SAMEER sensor ingestion through CPCB statutory directive generation.</p>
+              <p className={`text-[11px] ${textSec} mb-3 leading-relaxed`}>Step-by-step interactive tour of the VayuMan B2G triage pipeline — from SAMEER sensor ingestion through CPCB statutory directive generation.</p>
               <motion.button 
                 whileHover={{ scale: 1.02 }} 
                 whileTap={{ scale: 0.97 }} 

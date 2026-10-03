@@ -13,12 +13,28 @@ import {
   PanelLeftOpen
 } from 'lucide-react';
 
+export interface BackendActionLite {
+  id: number;
+  cluster_id: number;
+  cluster_name: string;
+  category: string;
+  action_taken: string;
+  officer_notes?: string;
+  aqi_before: number;
+  aqi_after: number;
+  aqi_delta: number;
+  percentage_improvement: number;
+  complaints_resolved: number;
+  resolved_at: string;
+}
+
 interface ImpactLogViewProps {
   clusters: IncidentCluster[];
   onBackToTriage: () => void;
   onInspectCluster?: (clusterId: string) => void;
   onToggleSidebar?: () => void;
   isSidebarCollapsed?: boolean;
+  backendActions?: BackendActionLite[];
 }
 
 export interface ImpactLogRecord {
@@ -101,19 +117,51 @@ const SEEDED_IMPACT_RECORDS: ImpactLogRecord[] = [
   }
 ];
 
+const formatBackendTime = (iso: string): string => {
+  try {
+    const d = new Date(iso);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
+    return sameDay ? `Today, ${timeStr}` : `${d.toLocaleDateString('en-GB')}, ${timeStr}`;
+  } catch {
+    return iso;
+  }
+};
+
 export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
   clusters,
   onBackToTriage,
   onToggleSidebar,
-  isSidebarCollapsed
+  isSidebarCollapsed,
+  backendActions = []
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecord, setSelectedRecord] = useState<ImpactLogRecord | null>(null);
 
-  // Combine seeded historical records with dynamically resolved clusters from this session
+  // Combine persisted backend actions, in-session resolved clusters, and seeded historical records
   const allRecords = useMemo(() => {
+    // 1. Persisted backend actions (DB-backed, survives reload)
+    const backendRecords: ImpactLogRecord[] = backendActions.map(a => ({
+      id: `IMP-DB-${a.id}`,
+      cluster_id: `CLUST-LIVE-${String(a.cluster_id).padStart(2, '0')}`,
+      title: a.cluster_name,
+      ward: 'Pune',
+      intervention: a.action_taken || 'Municipal Nodal Enforcement Executed',
+      pre_aqi: Math.round(a.aqi_before),
+      post_aqi: Math.round(a.aqi_after),
+      net_delta: Math.round(a.aqi_delta),
+      timestamp: formatBackendTime(a.resolved_at),
+      sensor_station: `Backend-Attributed · ${a.category.replace('_', ' ')}`,
+      evidence_photo_url: 'GeoProof_Backend_Logged.jpg',
+      officer_id: 'Smt. P. S. Jadhav (PMC-ENV-14)',
+      within_sla: true
+    }));
+
+    // 2. Session-only resolved clusters that haven't yet been reflected in backendActions
+    const backendClusterIds = new Set(backendActions.map(a => `CLUST-LIVE-${String(a.cluster_id).padStart(2, '0')}`));
     const liveResolvedRecords: ImpactLogRecord[] = clusters
-      .filter(c => c.status === 'resolved' && c.resolution)
+      .filter(c => c.status === 'resolved' && c.resolution && !backendClusterIds.has(c.cluster_id))
       .map(c => ({
         id: `IMP-LIVE-${c.cluster_id.replace('CLUST-', '')}`,
         cluster_id: c.cluster_id,
@@ -123,7 +171,7 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
         pre_aqi: c.resolution?.pre_intervention_aqi || c.avg_aqi,
         post_aqi: c.resolution?.post_intervention_aqi || Math.max(120, c.avg_aqi - 65),
         net_delta: c.resolution?.aqi_delta || -65,
-        timestamp: c.resolution?.resolved_at 
+        timestamp: c.resolution?.resolved_at
           ? c.resolution.resolved_at
           : 'Just now',
         sensor_station: c.resolution?.sensor_station_id || c.location_name || 'Pune CAAQMS Grid 01',
@@ -132,8 +180,8 @@ export const ImpactLogView: React.FC<ImpactLogViewProps> = ({
         within_sla: true
       }));
 
-    return [...liveResolvedRecords, ...SEEDED_IMPACT_RECORDS];
-  }, [clusters]);
+    return [...backendRecords, ...liveResolvedRecords, ...SEEDED_IMPACT_RECORDS];
+  }, [clusters, backendActions]);
 
   // Filter records based on search query
   const filteredRecords = useMemo(() => {

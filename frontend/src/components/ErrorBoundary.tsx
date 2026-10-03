@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('AirSense ErrorBoundary caught an unhandled error:', error, errorInfo);
+    console.error('VayuMan ErrorBoundary caught an unhandled error:', error, errorInfo);
     this.setState({ errorInfo });
   }
 
@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div>
               <div className="flex items-center justify-center gap-1.5 mb-1">
                 <Shield className="w-4 h-4 text-sky-600" />
-                <span className="font-bold text-sm text-slate-900 tracking-tight">AirSense B2G Triage</span>
+                <span className="font-bold text-sm text-slate-900 tracking-tight">VayuMan B2G Triage</span>
               </div>
               <h2 className="text-base font-bold text-slate-800">
                 {this.props.fallbackTitle || 'Component Encountered a Problem'}

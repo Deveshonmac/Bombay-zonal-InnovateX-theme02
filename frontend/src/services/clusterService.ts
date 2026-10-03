@@ -165,3 +165,187 @@ export async function fetchLiveClusters(): Promise<LiveDataResult> {
     return { clusters: [], source: 'mock' };
   }
 }
+
+// Extract numeric backend ID from frontend cluster_id string "CLUST-LIVE-##"
+export function extractBackendClusterId(clusterIdStr: string): number | null {
+  const m = clusterIdStr.match(/CLUST-LIVE-(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// POST a resolution to the backend. Returns the created ActionOut record (or null on failure).
+export interface BackendActionRecord {
+  id: number;
+  cluster_id: number;
+  cluster_name: string;
+  category: string;
+  action_taken: string;
+  officer_notes?: string;
+  aqi_before: number;
+  aqi_after: number;
+  aqi_delta: number;
+  percentage_improvement: number;
+  complaints_resolved: number;
+  resolved_at: string;
+}
+
+export async function resolveClusterBackend(
+  backendClusterId: number,
+  payload: { action_taken: string; officer_notes?: string; aqi_before?: number; aqi_after?: number }
+): Promise<BackendActionRecord | null> {
+  try {
+    const res = await fetch(`/api/clusters/${backendClusterId}/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[clusterService] Backend resolve failed:', err);
+    return null;
+  }
+}
+
+// Fetch the aggregate Impact Ledger from backend (persisted actions).
+export async function fetchBackendActions(): Promise<BackendActionRecord[]> {
+  try {
+    const res = await fetch('/api/actions', { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+// ------------- Synthetic data seeder (true variation, not re-dump) -------------
+// Each call picks 2-4 random hotspots from an EXPANDED Pune zone library and
+// generates fresh gaussian-scattered complaints. Backend re-clusters after ingest.
+
+interface SeedZone {
+  zone_name: string;
+  center_lat: number;
+  center_lng: number;
+  category: string;
+  base_aqi: number;
+  spread: number;
+  descriptions: string[];
+}
+
+const SEED_ZONE_LIBRARY: SeedZone[] = [
+  { zone_name: 'Hadapsar / Magarpatta Metro Corridor', center_lat: 18.5089, center_lng: 73.9260, category: 'construction_dust', base_aqi: 320, spread: 0.006,
+    descriptions: ['Dust plumes from metro construction', 'Concrete mixing with zero water sprinkling', 'Demolition debris left uncovered'] },
+  { zone_name: 'Shivaji Nagar / FC Road Chowk', center_lat: 18.5314, center_lng: 73.8446, category: 'vehicular', base_aqi: 295, spread: 0.005,
+    descriptions: ['Traffic bottleneck with diesel idling', 'Thick exhaust fumes at junction', 'Heavy PM2.5 haze under flyover'] },
+  { zone_name: 'Bhosari MIDC Industrial Belt', center_lat: 18.6279, center_lng: 73.8398, category: 'industrial', base_aqi: 360, spread: 0.008,
+    descriptions: ['Dark chimney smoke from foundry', 'Pungent chemical odor into residential area', 'Unfiltered boiler exhaust'] },
+  { zone_name: 'Kothrud ARAI Hill Perimeter', center_lat: 18.5074, center_lng: 73.8077, category: 'biomass_burning', base_aqi: 240, spread: 0.007,
+    descriptions: ['Dry leaves burning near trail', 'Smoke drifting from hillside sweepings', 'Open burning of tree prunings'] },
+  { zone_name: 'Viman Nagar / Wadgaon Sheri Canal', center_lat: 18.5679, center_lng: 73.9143, category: 'garbage_burning', base_aqi: 275, spread: 0.006,
+    descriptions: ['Plastic set ablaze near canal', 'Toxic black smoke evenings', 'Dumping and burning of trash'] },
+  // Expanded zones that produce NEW hotspots each seeding
+  { zone_name: 'Hinjewadi IT Park Phase 2', center_lat: 18.5908, center_lng: 73.7389, category: 'vehicular', base_aqi: 285, spread: 0.006,
+    descriptions: ['Peak-hour cab queues emitting unburnt fuel', 'IT shuttle idling without PUC', 'Narrow lane bumper-to-bumper tailpipe plume'] },
+  { zone_name: 'Katraj Dairy Chowk Junction', center_lat: 18.4475, center_lng: 73.8651, category: 'vehicular', base_aqi: 310, spread: 0.005,
+    descriptions: ['Highway truck idling at tollgate approach', 'Visible soot plumes from heavy diesel vehicles'] },
+  { zone_name: 'Yerawada Jail Road Dump Yard', center_lat: 18.5518, center_lng: 73.8882, category: 'garbage_burning', base_aqi: 345, spread: 0.005,
+    descriptions: ['Night-time waste pile ignition', 'Burning rubber and plastic odor', 'Unmanned dump heap smouldering'] },
+  { zone_name: 'Pimpri Chinchwad Chemical Zone', center_lat: 18.6298, center_lng: 73.7997, category: 'industrial', base_aqi: 335, spread: 0.007,
+    descriptions: ['Solvent odor leaking from storage tank', 'Flare stack discharge after hours', 'Chemical plume drifting over colony'] },
+  { zone_name: 'Baner Balewadi Highrise Site', center_lat: 18.5590, center_lng: 73.7868, category: 'construction_dust', base_aqi: 300, spread: 0.006,
+    descriptions: ['Open-cut earthworks without screens', 'Dry drilling raising dust clouds', 'Dumpers exiting without tyre wash'] },
+  { zone_name: 'Sinhagad Road Hillside', center_lat: 18.4621, center_lng: 73.8252, category: 'biomass_burning', base_aqi: 255, spread: 0.007,
+    descriptions: ['Garden waste pyre on hill slope', 'Smoke blanket at dawn', 'Hillside grass burning after dry spell'] },
+  { zone_name: 'Deccan Gymkhana Rush Corridor', center_lat: 18.5156, center_lng: 73.8419, category: 'vehicular', base_aqi: 280, spread: 0.005,
+    descriptions: ['Evening PCMC bus congestion', 'Rickshaw stand plume', 'Pedestrian crossing haze'] },
+];
+
+function rngGaussian(mean: number, stdDev: number): number {
+  // Box-Muller
+  const u1 = Math.random() || 1e-10;
+  const u2 = Math.random() || 1e-10;
+  const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  return mean + z * stdDev;
+}
+
+export interface SeedResult {
+  ingested: number;
+  zones_used: string[];
+  clustered: boolean;
+}
+
+/**
+ * Generate a fresh batch of synthetic complaints across 3-5 randomly chosen zones.
+ * Each call produces DIFFERENT data (random zones, random counts, random coords).
+ * Pushes to backend ingest + triggers re-clustering.
+ */
+export async function seedRandomComplaints(targetTotal: number = 180): Promise<SeedResult> {
+  // Pick 3-5 random zones
+  const zoneCount = 3 + Math.floor(Math.random() * 3);
+  const picked: SeedZone[] = [];
+  const pool = [...SEED_ZONE_LIBRARY];
+  for (let i = 0; i < zoneCount && pool.length; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    picked.push(pool.splice(idx, 1)[0]);
+  }
+
+  // Distribute targetTotal across the picked zones with per-zone variability
+  const complaints: any[] = [];
+  const perZoneBase = Math.floor(targetTotal / picked.length);
+  const nowIso = new Date().toISOString();
+
+  for (const z of picked) {
+    const count = Math.max(10, perZoneBase + Math.floor((Math.random() - 0.5) * 40));
+    for (let i = 0; i < count; i++) {
+      const lat = z.center_lat + rngGaussian(0, z.spread);
+      const lng = z.center_lng + rngGaussian(0, z.spread);
+      const aqi = Math.max(50, Math.round(z.base_aqi + (Math.random() * 55 - 25)));
+      const minutesAgo = Math.floor(Math.random() * 60 * 36);
+      const ts = new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
+      complaints.push({
+        complaint_id: `CMP-SEED-${Date.now().toString(36)}-${complaints.length}`,
+        lat: Number(lat.toFixed(6)),
+        lng: Number(lng.toFixed(6)),
+        category: z.category,
+        description: z.descriptions[Math.floor(Math.random() * z.descriptions.length)],
+        reported_aqi: aqi,
+        timestamp: ts,
+      });
+    }
+  }
+
+  let ingested = 0;
+  let clustered = false;
+
+  try {
+    const ingestRes = await fetch('/api/complaints/ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(complaints),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (ingestRes.ok) {
+      const j = await ingestRes.json();
+      ingested = j.ingested_count || complaints.length;
+    }
+  } catch (err) {
+    console.warn('[seedRandomComplaints] ingest failed:', err);
+  }
+
+  try {
+    const runRes = await fetch('/api/clusters/run', {
+      method: 'POST',
+      signal: AbortSignal.timeout(10000),
+    });
+    if (runRes.ok) clustered = true;
+  } catch (err) {
+    console.warn('[seedRandomComplaints] clustering failed:', err);
+  }
+
+  return {
+    ingested,
+    zones_used: picked.map(z => z.zone_name),
+    clustered,
+  };
+}
